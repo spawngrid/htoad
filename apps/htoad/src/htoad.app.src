@@ -9,6 +9,7 @@
                   seresye,
                   esupervisor,
                   lager,
+                  getopt,
                   sasl
                  ]},
   {mod, { htoad_app, []}},

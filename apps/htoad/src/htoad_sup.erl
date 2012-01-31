@@ -4,7 +4,7 @@
 
 
 %% API
--export([start_link/0]).
+-export([start_link/2]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -13,7 +13,7 @@
 %% API functions
 %% ===================================================================
 
-start_link() ->
+start_link(_Args, _Rest) ->
     esupervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %% ===================================================================
