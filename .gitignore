@@ -1,3 +1,4 @@
 deps
 log
 apps/htoad/ebin
+rel/htoad
