@@ -1,0 +1,21 @@
+{application, htoad,
+ [
+  {description, "Hypnotoad Provisioning Tool"},
+  {vsn, git},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  seresye,
+                  lager,
+                  sasl
+                 ]},
+  {mod, { htoad_app, []}},
+  {env, [
+         {modules,
+          [htoad_host,
+           htoad_htoad,
+           htoad_lfs]}
+         ]}
+          
+ ]}.
