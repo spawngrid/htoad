@@ -11,5 +11,8 @@ build_server() ->
 main() ->
     [
      on(#host{ name = "spawn.local" }, {role, "build_server"}),
-     on({role, "build_server"}, build_server())
+     on({role, "build_server"}, build_server()),
+     on([ {operating_system_name, darwin},
+          {package_manager, "brew"} ],
+        {print, "Homebrew to be used~n"})           
     ].
