@@ -18,7 +18,9 @@
          {modules,
           [htoad_host,
            htoad_htoad,
-           htoad_lfs]}
+           htoad_lfs,
+           htoad_deps
+           ]}
          ]}
           
  ]}.
