@@ -138,9 +138,9 @@ code_change(_OldVsn, State, _Extra) ->
 load_file(File) ->
     {ok, B} = file:read_file(File),
     S = binary_to_list(B),
-    Module = list_to_atom(File),
+    Module = list_to_atom(re:replace(File,"\\.","_",[{return, list}, global])),
     Source =
-        "-module('" ++ File ++ "').\n"
+        "-module('" ++ atom_to_list(Module) ++ "').\n"
         "-include(\"stdlib.hrl\").\n"
         "-compile(export_all).\n"
         "-import(htoad_utils, [on/2]).\n" ++ S ++ "\n \n",
