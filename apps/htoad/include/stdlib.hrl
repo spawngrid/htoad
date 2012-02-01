@@ -2,10 +2,18 @@
         {
         }).
 
+-record('htoad.module',
+        {
+          module,
+          filename
+        }).
+
 -record(htoad,
         {
           version
         }).
+
+%%
 
 -record(host,
         {

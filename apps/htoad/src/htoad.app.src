@@ -10,7 +10,8 @@
                   esupervisor,
                   lager,
                   getopt,
-                  sasl
+                  sasl,
+                  dynamic_compile
                  ]},
   {mod, { htoad_app, []}},
   {env, [

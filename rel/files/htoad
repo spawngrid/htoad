@@ -2,6 +2,7 @@
 # -*- tab-width:4;indent-tabs-mode:nil -*-
 # ex: ts=4 sw=4 et
 
+HTOAD_CWD=$(pwd)
 RUNNER_SCRIPT_DIR=$(cd ${0%/*} && pwd)
 
 RUNNER_BASE_DIR=${RUNNER_SCRIPT_DIR%/*}
@@ -75,6 +76,7 @@ export EMU
 export ROOTDIR
 export BINDIR
 export PROGNAME
+export HTOAD_CWD
 
 # Log the startup
 logger -t "$SCRIPT[$$]" "Starting up"

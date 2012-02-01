@@ -1,7 +1,7 @@
 -module(htoad_app).
-
 -behaviour(application).
 
+-include_lib("htoad/include/htoad.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
 %% Application callbacks
@@ -34,9 +34,8 @@ stop(_State) ->
 init() ->
     {ok, Modules} = application:get_env(htoad, modules),
     [ ok = seresye:add_rules(htoad_engine, Module) || Module <- Modules ],
-    seresye:assert(htoad_engine, #init{}).
-
-
+    seresye:assert(htoad_engine, #init{}).                                                        
+        
 optspec() ->
     [
     ].
