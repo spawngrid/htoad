@@ -82,8 +82,8 @@ handle_call(_Request, _From, State) ->
 %%--------------------------------------------------------------------
 handle_cast(init, #state{ file = File } = State) ->
     Module = load_file(File),
-    seresye:assert(htoad_engine, #'htoad.module'{ filename = File, module = Module }),
-    seresye:assert(htoad_engine, Module:main()),
+    seresye:assert(?ENGINE, #'htoad.module'{ filename = File, module = Module }),
+    seresye:assert(?ENGINE, Module:main()),
     {noreply, State#state{ module = Module }}.
 
 %%--------------------------------------------------------------------

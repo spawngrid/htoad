@@ -19,7 +19,7 @@ start_link(_Args, Files) ->
     esupervisor:start_link({local, ?MODULE}, ?MODULE, [Files]).
 
 start_seresye() ->
-    {ok, Pid} = seresye:start(htoad_engine),
+    {ok, Pid} = seresye:start(?ENGINE),
     init(),
     {ok, Pid}.
 
@@ -32,7 +32,7 @@ init([Files]) ->
     #one_for_one{
       children = [
                   #worker{
-                     id = htoad_engine,
+                     id = ?ENGINE,
                      restart = permanent,
                      start_func = {htoad_sup, start_seresye, []}
                     },
@@ -56,5 +56,5 @@ init([Files]) ->
 
 init() ->
     {ok, Modules} = application:get_env(htoad, modules),
-    [ ok = seresye:add_rules(htoad_engine, Module) || Module <- Modules ],
-    seresye:assert(htoad_engine, #init{}).
+    [ ok = seresye:add_rules(?ENGINE, Module) || Module <- Modules ],
+    seresye:assert(?ENGINE, #init{}).
