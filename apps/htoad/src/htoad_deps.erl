@@ -6,6 +6,7 @@
 -rules([init,on,on_match]).
 
 init(Engine, #init{}) ->
+    lager:debug("Initialized htoad_deps"),
     Engine.
 
 on_match(Engine, Assertion, {on, {match, MatchSpec}, Plan}) ->
