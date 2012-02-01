@@ -139,10 +139,13 @@ load_file(File) ->
     {ok, B} = file:read_file(File),
     S = binary_to_list(B),
     Module = list_to_atom(re:replace(File,"\\.","_",[{return, list}, global])),
+    Utils = string:join([ atom_to_list(F) ++ "/" ++ integer_to_list(A) ||
+                            {F,A} <- htoad_utils:module_info(exports) ],
+                        ", "),
     Source =
         "-module('" ++ atom_to_list(Module) ++ "').\n"
         "-include(\"stdlib.hrl\").\n"
         "-compile(export_all).\n"
-        "-import(htoad_utils, [on/2]).\n" ++ S ++ "\n \n",
+        "-import(htoad_utils, [" ++ Utils ++ "]).\n" ++ S ++ "\n \n",
     dynamic_compile:load_from_string(Source, [{i, code:lib_dir(htoad,include)}]),
     Module.
