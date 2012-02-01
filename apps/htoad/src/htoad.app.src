@@ -11,7 +11,8 @@
                   lager,
                   getopt,
                   sasl,
-                  dynamic_compile
+                  dynamic_compile,
+                  erlydtl
                  ]},
   {mod, { htoad_app, []}},
   {env, [
