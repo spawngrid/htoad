@@ -4,15 +4,16 @@ build_server() ->
     [
      #file{ type = dir,
             path = filename:join([?BASE_DIR, "build_dir"])
-          }
+          },
+     on([ {operating_system_name, darwin},
+          {package_manager, "brew"} ],
+        #package{ name = "git" })
+
     ].
 
 
 main() ->
     [
      on(#host{ name = "spawn.local" }, {role, "build_server"}),
-     on({role, "build_server"}, build_server()),
-     on([ {operating_system_name, darwin},
-          {package_manager, "brew"} ],
-        #package{ name = "readline" })
+     on({role, "build_server"}, build_server())
     ].
