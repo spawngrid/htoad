@@ -84,7 +84,9 @@ handle_call(_Request, _From, State) ->
 handle_cast(init, #state{ file = File } = State) ->
     Module = load_file(File),
     seresye:assert(?ENGINE, #'htoad.module'{ filename = File, module = Module }),
+    lager:debug("Loaded module ~s", [File]),
     seresye:assert(?ENGINE, Module:main()),
+    lager:debug("Loaded module ~s assertions", [File]),
     {noreply, State#state{ module = Module }}.
 
 %%--------------------------------------------------------------------
