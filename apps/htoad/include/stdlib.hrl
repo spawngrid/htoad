@@ -17,8 +17,7 @@
 
 -record(host,
         {
-          name :: undefined | string(),
-          operating_system
+          name :: undefined | string()
         }).
 
 -record(file,
