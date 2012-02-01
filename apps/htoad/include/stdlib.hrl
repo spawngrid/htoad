@@ -25,7 +25,7 @@
         {
           type = file :: file | dir,
           path :: undefined | string(),
-          ensure :: undefined | present | absent,
+          ensure = present :: present | absent,
           mode,
           content = ""
         }).
