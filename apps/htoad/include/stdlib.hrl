@@ -15,11 +15,6 @@
 
 %%
 
--record(host,
-        {
-          name :: undefined | string()
-        }).
-
 -record(file,
         {
           type = file :: file | dir,

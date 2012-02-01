@@ -8,7 +8,7 @@
 init(Engine, #init{}) ->
     {OsFamily, OsName} = os:type(),
     OsVersion = os:version(),
-    Engine1 = seresye_engine:assert(Engine, [#host{ name = hostname() },
+    Engine1 = seresye_engine:assert(Engine, [{host, hostname()},
                                              {operating_system_type, OsFamily},
                                              {operating_system_name, OsName},
                                              {operating_system_version, OsVersion}]),

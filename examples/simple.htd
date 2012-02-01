@@ -15,6 +15,6 @@ build_server() ->
 main() ->
     [
      load("examples/base.htd"),
-     on(#host{ name = "spawn.local" }, {role, "build_server"}),
+     on({host, "spawn.local"}, {role, "build_server"}),
      on({role, "build_server"}, build_server())
     ].
