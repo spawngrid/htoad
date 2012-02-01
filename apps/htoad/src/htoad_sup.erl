@@ -6,7 +6,7 @@
 -include_lib("htoad/include/stdlib.hrl").
 
 %% API
--export([start_link/2, start_seresye/0]).
+-export([start_link/1, start_seresye/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -15,7 +15,7 @@
 %% API functions
 %% ===================================================================
 
-start_link(_Args, Files) ->
+start_link(Files) ->
     esupervisor:start_link({local, ?MODULE}, ?MODULE, [Files]).
 
 start_seresye() ->

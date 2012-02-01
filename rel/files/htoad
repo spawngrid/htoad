@@ -71,12 +71,15 @@ ROOTDIR=$RUNNER_BASE_DIR
 BINDIR=$ROOTDIR/erts-$ERTS_VSN/bin
 EMU=beam
 PROGNAME=`echo $0 | sed 's/.*\\///'`
-CMD="$BINDIR/erlexec -boot $RUNNER_BASE_DIR/releases/$APP_VSN/$BOOTFILE -noshell -mode embedded -config $CONFIG_PATH -args_file $VMARGS_PATH -- ${0+"$@"}"
+EXTRA_ARGS=$*
+
+CMD="$BINDIR/erlexec -boot $RUNNER_BASE_DIR/releases/$APP_VSN/$BOOTFILE -noshell -mode embedded -config $CONFIG_PATH -args_file $VMARGS_PATH -extra $EXTRA_ARGS"
 export EMU
 export ROOTDIR
 export BINDIR
 export PROGNAME
 export HTOAD_CWD
+export EXTRA_ARGS
 
 # Log the startup
 logger -t "$SCRIPT[$$]" "Starting up"
