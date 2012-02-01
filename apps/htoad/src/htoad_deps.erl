@@ -13,7 +13,7 @@ on_match(Engine, Assertion, {on, {match, MatchSpec}, Plan}) ->
     case ets:match_spec_run([Assertion], Ms) of
         [] ->
             Engine;
-        [true] ->
+        [_] ->
             lager:debug("Condition ~p matching ~p for the plan of ~p has occurred", [Assertion, MatchSpec, Plan]),
             seresye_engine:assert(Engine, Plan)
     end.
