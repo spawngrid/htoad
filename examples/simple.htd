@@ -1,0 +1,15 @@
+-define(BASE_DIR, "/tmp/srv").
+
+build_server() ->
+    [
+     #file{ type = dir,
+            path = filename:join([?BASE_DIR, "build_dir"])
+          }
+    ].
+
+
+main() ->
+    [
+     on(#host{ name = "spawn.local" }, {role, "build_server"}),
+     on({role, "build_server"}, build_server())
+    ].
