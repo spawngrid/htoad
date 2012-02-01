@@ -12,14 +12,15 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    {ok, {Args, Rest}} = getopt:parse(optspec(), init:get_plain_arguments()),
-    case proplists:get_value(command, Args) of
-        undefined ->
-            getopt:usage(optspec(), "htoad"),
+    {ok, {Args, Files}} = getopt:parse(optspec(), init:get_plain_arguments()),
+    case Files of
+        [] ->
+            getopt:usage(optspec(), "htoad","[file ...]",
+                         [{"file", "Instructions file to process"}]),
             init:stop(),
             {ok, self()};
         _ ->
-            {ok, Pid} = htoad_sup:start_link(Args, Rest),
+            {ok, Pid} = htoad_sup:start_link(Args, Files),
             init(),
             {ok, Pid}
     end.
@@ -38,5 +39,4 @@ init() ->
 
 optspec() ->
     [
-     {command, undefined, undefined, string, "Command to run"}
     ].

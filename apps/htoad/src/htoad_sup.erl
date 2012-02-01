@@ -13,7 +13,7 @@
 %% API functions
 %% ===================================================================
 
-start_link(_Args, _Rest) ->
+start_link(_Args, _Files) ->
     esupervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %% ===================================================================
