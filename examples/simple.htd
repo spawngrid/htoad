@@ -14,5 +14,5 @@ main() ->
      on({role, "build_server"}, build_server()),
      on([ {operating_system_name, darwin},
           {package_manager, "brew"} ],
-        {print, "Homebrew to be used~n"})           
+        #package{ name = "readline" })
     ].

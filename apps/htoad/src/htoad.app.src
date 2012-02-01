@@ -21,7 +21,8 @@
            htoad_lfs,
            htoad_deps,
            htoad_pkg,
-           htoad_io
+           htoad_io,
+           htoad_shell
            ]}
          ]}
           

@@ -28,3 +28,15 @@
           mode,
           content = ""
         }).
+
+-record(package,
+        {
+          name,
+          version,
+          ensure = present :: present | absent
+        }).
+
+-record(shell,
+        {
+          cmd
+        }).
