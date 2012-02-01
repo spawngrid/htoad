@@ -14,6 +14,7 @@ init(Engine, #init{}) ->
 ensure_file_present(Engine, #file{ ensure = present, 
                                    type = file 
                                  } = File) ->
+    filelib:ensure_dir(File#file.path),
     file:write_file(File#file.path, File#file.content),
     lager:debug("Ensured file ~s",[File#file.path]),
     chmod(File#file.path, File#file.mode),
