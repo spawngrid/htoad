@@ -18,6 +18,7 @@
          {modules,
           [htoad_host,
            htoad_htoad,
+           htoad_toadies,
            htoad_lfs,
            htoad_deps,
            htoad_pkg,
