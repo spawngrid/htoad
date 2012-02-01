@@ -47,7 +47,8 @@ start_link(File) ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init(File) ->
+init(File0) ->
+    File = filename:absname(filename:join(os:getenv("HTOAD_CWD"), File0)),
     erlang:process_flag(trap_exit, true),
     gen_server:cast(self(), init),
     {ok, #state{ file = File }}.
@@ -132,8 +133,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 %% Private
-load_file(File0) ->
-    File = filename:absname(filename:join(os:getenv("HTOAD_CWD"), File0)),
+load_file(File) ->
     {ok, B} = file:read_file(File),
     S = binary_to_list(B),
     Module = list_to_atom(File),
