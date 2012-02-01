@@ -19,7 +19,8 @@
           [htoad_host,
            htoad_htoad,
            htoad_lfs,
-           htoad_deps
+           htoad_deps,
+           htoad_pkg
            ]}
          ]}
           
