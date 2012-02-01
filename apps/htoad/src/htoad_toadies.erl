@@ -13,6 +13,12 @@ init(Engine, #init{}) ->
     Engine.
 
 load_file(Engine, {load, File}) ->
+    [ load(F) || F <- filelib:wildcard(filename:join([os:getenv("HTOAD_CWD"), File])) ],
+    Engine.
+
+
+load(File) ->
+    lager:debug("Starting worker for ~s module",[File]),
     Spec = esupervisor:spec(#worker{
                                id = File,
                                modules = dynamic,
@@ -20,6 +26,5 @@ load_file(Engine, {load, File}) ->
                                start_func = {htoad_module_server,
                                              start_link,
                                              [File]}}),
-    supervisor:start_child(htoad_modules, Spec),
-    Engine.
+    supervisor:start_child(htoad_modules, Spec).
     
