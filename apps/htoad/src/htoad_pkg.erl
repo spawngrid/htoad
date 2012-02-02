@@ -7,15 +7,13 @@
 -rules([init, init_linux, ensure_package,
         package_not_present, package_present]).
                        
--neg_rule({init, [{operating_system_name, linux}]}). 
-
-init(Engine, #init{}, {operating_system_name, OsName}) when not {rule, [{operating_system_name, linux}]}->
+init(Engine, #init{}, {operating_system_name, OsName}) when OsName =/= linux ->
     PkgManager = pick_pkg_manager(OsName),
     lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
     htoad:assert(Engine, {package_manager, PkgManager}).
 
-init_linux(Engine, #init{}, {operating_system_name, OsName},{linux_distribution, Linux}) ->
-    PkgManager = pick_pkg_manager({OsName, Linux}),
+init_linux(Engine, #init{}, {operating_system_name, linux},{linux_distribution, Linux}) ->
+    PkgManager = pick_pkg_manager({linux, Linux}),
     lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
     htoad:assert(Engine, {package_manager, PkgManager}).
     
