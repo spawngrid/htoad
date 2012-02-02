@@ -2,7 +2,7 @@
         {
         }).
 
--record('htoad.module',
+-record('htoad.toadie',
         {
           module,
           filename,

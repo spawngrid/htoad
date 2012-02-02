@@ -1,4 +1,4 @@
--module(htoad_module_server).
+-module(htoad_toadie_server).
 -behaviour(gen_server).
 
 -include_lib("htoad/include/htoad.hrl").
@@ -15,7 +15,7 @@
 
 -record(state, {
           file,
-          module,
+          toadie,
           applied = false
          }).
 
@@ -82,17 +82,17 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_cast(apply, #state{ file = File, module = Module, applied = false } = State) ->
-    lager:debug("Applying module ~s",[File]),
-    seresye:assert(?ENGINE, Module:main()),
-    lager:debug("Finished applying module ~s assertions", [File]),
+handle_cast(apply, #state{ file = File, toadie = Toadie, applied = false } = State) ->
+    lager:debug("Applying toadie ~s",[File]),
+    seresye:assert(?ENGINE, Toadie:main()),
+    lager:debug("Finished applying toadie ~s assertions", [File]),
     {noreply, State#state { applied = true }};
 
 handle_cast(init, #state{ file = File } = State) ->
-    Module = load_file(File),
-    seresye:assert(?ENGINE, #'htoad.module'{ filename = File, module = Module, server = self() }),
-    lager:debug("Loaded module ~s", [File]),
-    {noreply, State#state{ module = Module }};
+    Toadie = load_file(File),
+    seresye:assert(?ENGINE, #'htoad.toadie'{ filename = File, module = Toadie, server = self() }),
+    lager:debug("Loaded toadie ~s", [File]),
+    {noreply, State#state{ toadie = Toadie }};
 
 handle_cast(_Info, State) ->
     {noreply, State}.
@@ -122,10 +122,10 @@ handle_info(_Info, State) ->
 %% @spec terminate(Reason, State) -> void()
 %% @end
 %%--------------------------------------------------------------------
-terminate(_Reason, #state{ file = File, module = Module } = _State) ->
-    lager:debug("Unloading module ~s", [File]),
-    code:delete(Module),
-    code:purge(Module),
+terminate(_Reason, #state{ file = File, toadie = Toadie } = _State) ->
+    lager:debug("Unloading toadie ~s", [File]),
+    code:delete(Toadie),
+    code:purge(Toadie),
     ok.
 
 %%--------------------------------------------------------------------

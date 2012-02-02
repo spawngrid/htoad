@@ -37,15 +37,15 @@ init([Args, Files]) ->
                      start_func = {htoad_sup, start_seresye, [Args]}
                     },
                   #one_for_one {
-                           id = htoad_modules,
-                           registered = htoad_modules,
+                           id = htoad_toadies,
+                           registered = htoad_toadies,
                            children =
                                [ 
                                  #worker {
                                     id = File,
                                     modules = dynamic,
                                     restart = permanent,
-                                    start_func = {htoad_module_server, start_link, [File]}
+                                    start_func = {htoad_toadie_server, start_link, [File]}
                                    } || File <- Files ]
                           }
                  ]
