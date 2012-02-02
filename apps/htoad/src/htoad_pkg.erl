@@ -10,24 +10,10 @@
 -neg_rule({init, [{linux_distribution, '__IGNORE_UNDERSCORE__'}]}).
 
 init(Engine, #init{}, {operating_system_name, OsName}) when not {rule, [{linux_distribution, _}]} ->
-    PkgManager = pick_pkg_manager(OsName),
-    lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
-    case PkgManager of
-        unknown ->
-            Engine;
-        _ ->
-            htoad:assert(Engine, {package_manager, PkgManager})
-    end.
-    
+    initialize(Engine, OsName).
+
 init_linux(Engine, #init{}, {operating_system_name, linux}, {linux_distribution, Linux}) ->
-    PkgManager = pick_pkg_manager({linux, Linux}),
-    lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
-    case PkgManager of
-        unknown ->
-            Engine;
-        _ ->
-            htoad:assert(Engine, {package_manager, PkgManager})
-    end.
+    initialize(Engine, {linux, Linux}).
 
 ensure_package(Engine, #package{ ensure = present } = Package, {package_manager, PkgManager}) ->
     pkg_manager_check(Engine, PkgManager, Package).
@@ -45,6 +31,17 @@ package_present(Engine, {package_check,
     Engine.
 
 %% private
+initialize(Engine, System) ->
+    PkgManager = pick_pkg_manager(System),
+    case PkgManager of
+        unknown ->
+            lager:debug("Initialized htoad_pkg (package manager has not been detected yet)", [PkgManager]),
+            Engine;
+        _ ->
+            lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
+            htoad:assert(Engine, {package_manager, PkgManager})
+    end.
+
 pick_pkg_manager(darwin) ->
     hd([ list_to_atom(Cmd) || Cmd <- ["brew","port"],
                               os:find_executable(Cmd) /= false ]);
