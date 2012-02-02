@@ -17,12 +17,12 @@ on_match(Engine, Assertion, {on, {match, MatchSpec}, Plan}) ->
         [Match] ->
             SubstPlan = substitute(Plan, Match),
             lager:debug("Condition ~p matching ~p for the plan of ~p has occurred", [Assertion, MatchSpec, SubstPlan]),
-            seresye_engine:assert(Engine, SubstPlan)
+            htoad:assert(Engine, SubstPlan)
     end.
 
 on(Engine, Assertion, {on, Assertion, Plan}) ->
     lager:debug("Condition ~p for the plan of ~p has occurred", [Assertion, Plan]),
-    seresye_engine:assert(Engine, Plan).
+    htoad:assert(Engine, Plan).
 
     
 %% private

@@ -6,9 +6,9 @@
 -rules([init]).
 
 init(Engine, #init{}) ->
-    Engine1 = seresye_engine:assert(Engine, #htoad{
-                                      version = vsn()
-                                     }),
+    Engine1 = htoad:assert(Engine, #htoad{
+                             version = vsn()
+                            }),
     lager:debug("Initialized htoad_htoad"),
     Engine1.
 

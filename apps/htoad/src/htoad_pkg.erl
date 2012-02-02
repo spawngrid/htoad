@@ -11,7 +11,7 @@
 init(Engine, #init{}, {operating_system_name, OsName}) ->
     PkgManager = pick_pkg_manager(OsName),
     lager:debug("Initialized htoad_pkg"),
-    seresye_engine:assert(Engine, {package_manager, PkgManager}).
+    htoad:assert(Engine, {package_manager, PkgManager}).
     
 
 ensure_package(Engine, #package{ ensure = present } = Package, {package_manager, PkgManager}) ->
@@ -58,20 +58,20 @@ pick_pkg_manager(darwin) ->
 pkg_manager_check(Engine, brew, #package{} = Package) ->
     lager:debug("Checking if package ~s has been already installed",[format_package(Package)]),
     Shell = ?BREW_SHELL_CHECK(Package),
-    seresye_engine:assert(Engine, 
-                          [
-                           Shell,
-                           htoad_utils:on({match, 
-                                           [{{output, Shell, '$1'},
-                                             [],
-                                             ['$1']}]},
-                                          {package_check, Package, '_'})
-                           ]).
+    htoad:assert(Engine, 
+                 [
+                  Shell,
+                  htoad_utils:on({match, 
+                                  [{{output, Shell, '$1'},
+                                    [],
+                                    ['$1']}]},
+                                 {package_check, Package, '_'})
+                 ]).
 
 pkg_manager_install(Engine, brew, #package{} = Package) ->
     lager:debug("Installing package ~s",[format_package(Package)]),
     Shell = ?BREW_SHELL_INSTALL(Package),
-    seresye_engine:assert(Engine, Shell).
+    htoad:assert(Engine, Shell).
 
 format_package(#package{ name = Name, version = undefined }) ->                                      
     Name;
