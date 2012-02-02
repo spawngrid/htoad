@@ -21,6 +21,7 @@ init(Engine, #init{}) when not {rule, [{htoad_argument, {host, _}}]} ->
 
 linux(Engine, {operating_system_name, linux}) ->
     Shell = #shell{ cmd = ?LINUX_DISTRO_SHELL },
+    lager:debug("Detecting Linux distribution"),
     htoad:assert(Engine, [Shell,
                           htoad_utils:on({match,
                                           [{{output, Shell, '$1'},
