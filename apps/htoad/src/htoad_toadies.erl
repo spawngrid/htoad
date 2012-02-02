@@ -5,7 +5,7 @@
 
 -include_lib("esupervisor/include/esupervisor.hrl").
 
--export([init/2, load_file/2, apply_command/3]).
+-export([init/2, load_file/2, apply_command/4]).
 -rules([init, load_file, apply_command]).
 
 init(Engine, #init{}) ->
@@ -17,7 +17,7 @@ load_file(Engine, {load, File}) ->
     Engine.
 
 
-apply_command(Engine, #'htoad.toadie'{ server = Pid }, {htoad_command, apply}) ->
+apply_command(Engine, #'htoad.toadie'{ server = Pid }, {htoad_command, apply}, #init{}) ->
     gen_server:cast(Pid, apply),
     Engine.
 
