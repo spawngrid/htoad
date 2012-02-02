@@ -4,8 +4,8 @@
 
 -neg_rule({init, [{htoad_argument, {host, '__IGNORE_UNDERSCORE__'}}]}).
 
--export([init/2, init_with_hostname_overriden/3]).
--rules([init, init_with_hostname_overriden]).
+-export([init/2, init_with_hostname_overriden/3, linux/2]).
+-rules([init, init_with_hostname_overriden, linux]).
 
 init_with_hostname_overriden(Engine, #init{}, {htoad_argument, {host, Hostname}}) ->
     lager:debug("Overriding host name to ~s",[Hostname]),
@@ -13,6 +13,20 @@ init_with_hostname_overriden(Engine, #init{}, {htoad_argument, {host, Hostname}}
     
 init(Engine, #init{}) when not {rule, [{htoad_argument, {host, _}}]} ->
     initialize(Engine, hostname()).
+
+-define(LINUX_DISTRO_SHELL,
+        "([ `cat /etc/lsb-release | grep DISTRIB_ID` = DISTRIB_ID=Ubuntu ] && printf Ubuntu) ||
+         ([ -f /etc/redhat-release ] && [ `cat /etc/redhat-release | grep RedHat | wc -l` = 1 ] && printf RedHat) ||
+         ([ -f /etc/redhat-release ] && [ `cat /etc/redhat-release | grep CentOS | wc -l` = 1 ] && printf CentOS)").
+
+linux(Engine, {operating_system_name, linux}) ->
+    Shell = #shell{ cmd = ?LINUX_DISTRO_SHELL },
+    htoad:assert(Engine, [Shell,
+                          htoad_utils:on({match,
+                                          [{{output, Shell, '$1'},
+                                            [],
+                                            ['$1']}]},
+                                         {linux_distribution, '_'})]).
 
 %% private
 
