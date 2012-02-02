@@ -13,7 +13,7 @@ init(Engine, #init{}) ->
     Engine.
 
 load_file(Engine, {load, File}) ->
-    [ load(F) || F <- filelib:wildcard(filename:join([os:getenv("HTOAD_CWD"), File])) ],
+    [ load(F) || F <- filelib:wildcard(htoad_utils:file(File)) ],
     Engine.
 
 

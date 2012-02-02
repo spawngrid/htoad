@@ -48,7 +48,7 @@ start_link(File) ->
 %% @end
 %%--------------------------------------------------------------------
 init(File0) ->
-    File = filename:absname(filename:join(os:getenv("HTOAD_CWD"), File0)),
+    File = htoad_utils:file(File0),
     erlang:process_flag(trap_exit, true),
     gen_server:cast(self(), init),
     {ok, #state{ file = File }}.
