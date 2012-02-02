@@ -147,5 +147,5 @@ load_file(File) ->
         "-include(\"stdlib.hrl\").\n"
         "-compile(export_all).\n"
         "-import(htoad_utils, [" ++ Utils ++ "]).\n" ++ S ++ "\n \n",
-    dynamic_compile:load_from_string(Source, [{i, code:lib_dir(htoad,include)}]),
+    dynamic_compile:load_from_string(Source, [{i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
     Module.
