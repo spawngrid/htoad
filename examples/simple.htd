@@ -6,7 +6,7 @@ build_server() ->
             path = filename:join([?BASE_DIR, "build_dir"])
           },
      on([ {operating_system_name, darwin},
-          {package_manager, "brew"} ],
+          {package_manager, brew} ],
         #package{ name = "git" })
 
     ].
