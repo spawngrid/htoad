@@ -15,7 +15,7 @@ start(_StartType, _StartArgs) ->
     case Files of
         [] ->
             getopt:usage(optspec(), "htoad","[file ...]",
-                         [{"file", "Instructions file to process"}]),
+                         [{"file", "Toadies to process"}]),
             init:stop(),
             {ok, self()};
         _ ->
