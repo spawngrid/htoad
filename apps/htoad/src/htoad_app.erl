@@ -20,7 +20,7 @@ start(_StartType, _StartArgs) ->
             {ok, self()};
         _ ->
             process_args(Args),
-            htoad_sup:start_link(Files)
+            htoad_sup:start_link(Args, Files)
     end.
 
 
@@ -40,9 +40,14 @@ process_args([{log, LevelName}|T]) ->
             _ -> error
         end,
     lager:set_loglevel(lager_console_backend, Level),
+    process_args(T);
+process_args([_|T]) ->
     process_args(T).
+
+
 
 optspec() ->
     [
+     {host, undefined, "host", string, "Override host name"},
      {log, $l, "log", {string, "error"}, "Log output level (debug, info, error)"}
     ].

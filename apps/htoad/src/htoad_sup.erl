@@ -6,7 +6,7 @@
 -include_lib("htoad/include/stdlib.hrl").
 
 %% API
--export([start_link/1, start_seresye/0]).
+-export([start_link/2, start_seresye/1]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -15,12 +15,12 @@
 %% API functions
 %% ===================================================================
 
-start_link(Files) ->
-    esupervisor:start_link({local, ?MODULE}, ?MODULE, [Files]).
+start_link(Args, Files) ->
+    esupervisor:start_link({local, ?MODULE}, ?MODULE, [Args, Files]).
 
-start_seresye() ->
+start_seresye(Args) ->
     {ok, Pid} = seresye:start(?ENGINE),
-    init(),
+    init_engine(Args),
     {ok, Pid}.
 
 %% ===================================================================
@@ -28,13 +28,13 @@ start_seresye() ->
 %% ===================================================================
 
 
-init([Files]) ->
+init([Args, Files]) ->
     #one_for_one{
       children = [
                   #worker{
                      id = ?ENGINE,
                      restart = permanent,
-                     start_func = {htoad_sup, start_seresye, []}
+                     start_func = {htoad_sup, start_seresye, [Args]}
                     },
                   #one_for_one {
                            id = htoad_modules,
@@ -54,7 +54,8 @@ init([Files]) ->
 
 %% private
 
-init() ->
+init_engine(Args) ->
     {ok, Modules} = application:get_env(htoad, modules),
     [ ok = seresye:add_rules(?ENGINE, Module) || Module <- Modules ],
+    seresye:assert(?ENGINE, [{htoad_argument, Arg} || Arg <- Args ]),
     seresye:assert(?ENGINE, #init{}).
