@@ -85,7 +85,7 @@ handle_call(_Request, _From, State) ->
 handle_cast(apply, #state{ file = File, module = Module, applied = false } = State) ->
     lager:debug("Applying module ~s",[File]),
     seresye:assert(?ENGINE, Module:main()),
-    lager:debug("Loaded module ~s assertions", [File]),
+    lager:debug("Finished applying module ~s assertions", [File]),
     {noreply, State#state { applied = true }};
 
 handle_cast(init, #state{ file = File } = State) ->
