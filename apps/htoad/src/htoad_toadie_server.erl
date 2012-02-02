@@ -99,6 +99,7 @@ handle_cast(init, #state{ file = File } = State) ->
     lager:debug("Loaded toadie ~s", [File]),
     load_rules(File, Toadie, Bin),
     dry_run(File, Toadie),
+    htoad:assert({htoad_toadie_server_ready, self()}),
     {noreply, State#state{ toadie = Toadie }};
 
 handle_cast(_Info, State) ->
