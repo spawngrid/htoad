@@ -5,7 +5,8 @@
 -record('htoad.module',
         {
           module,
-          filename
+          filename,
+          server
         }).
 
 -record(htoad,

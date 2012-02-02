@@ -15,7 +15,8 @@
 
 -record(state, {
           file,
-          module
+          module,
+          applied = false
          }).
 
 %%%===================================================================
@@ -81,13 +82,21 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_cast(init, #state{ file = File } = State) ->
-    Module = load_file(File),
-    seresye:assert(?ENGINE, #'htoad.module'{ filename = File, module = Module }),
-    lager:debug("Loaded module ~s", [File]),
+handle_cast(apply, #state{ file = File, module = Module, applied = false } = State) ->
+    lager:debug("Applying module ~s",[File]),
     seresye:assert(?ENGINE, Module:main()),
     lager:debug("Loaded module ~s assertions", [File]),
-    {noreply, State#state{ module = Module }}.
+    {noreply, State#state { applied = true }};
+
+handle_cast(init, #state{ file = File } = State) ->
+    Module = load_file(File),
+    seresye:assert(?ENGINE, #'htoad.module'{ filename = File, module = Module, server = self() }),
+    lager:debug("Loaded module ~s", [File]),
+    {noreply, State#state{ module = Module }};
+
+handle_cast(_Info, State) ->
+    {noreply, State}.
+
 
 %%--------------------------------------------------------------------
 %% @private

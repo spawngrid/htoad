@@ -5,8 +5,8 @@
 
 -include_lib("esupervisor/include/esupervisor.hrl").
 
--export([init/2, load_file/2]).
--rules([init, load_file]).
+-export([init/2, load_file/2, apply_command/3]).
+-rules([init, load_file, apply_command]).
 
 init(Engine, #init{}) ->
     lager:debug("Initialized htoad_toadies"),
@@ -16,6 +16,11 @@ load_file(Engine, {load, File}) ->
     [ load(F) || F <- filelib:wildcard(htoad_utils:file(File)) ],
     Engine.
 
+apply_command(Engine, #'htoad.module'{ server = Pid }, {htoad_command, apply}) ->
+    gen_server:cast(Pid, apply),
+    Engine.
+
+%% private
 
 load(File) ->
     lager:debug("Loading module ~s as requested",[File]),
