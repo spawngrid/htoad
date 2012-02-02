@@ -2,15 +2,21 @@
 -include_lib("htoad/include/htoad.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
--export([init/3, ensure_package/3, 
+-export([init/3, init_linux/4, ensure_package/3, 
          package_not_present/3, package_present/2]).
--rules([init, ensure_package,
-       package_not_present, package_present]).
-                                         
+-rules([init, init_linux, ensure_package,
+        package_not_present, package_present]).
+                       
+-neg_rule({init, [{operating_system_name, linux}]}). 
 
-init(Engine, #init{}, {operating_system_name, OsName}) ->
+init(Engine, #init{}, {operating_system_name, OsName}) when not {rule, [{operating_system_name, linux}]}->
     PkgManager = pick_pkg_manager(OsName),
-    lager:debug("Initialized htoad_pkg"),
+    lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
+    htoad:assert(Engine, {package_manager, PkgManager}).
+
+init_linux(Engine, #init{}, {operating_system_name, OsName},{linux_distribution, Linux}) ->
+    PkgManager = pick_pkg_manager({OsName, Linux}),
+    lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
     htoad:assert(Engine, {package_manager, PkgManager}).
     
 
@@ -32,7 +38,13 @@ package_present(Engine, {package_check,
 %% private
 pick_pkg_manager(darwin) ->
     hd([ list_to_atom(Cmd) || Cmd <- ["brew","port"],
-                              os:find_executable(Cmd) /= false ]).
+                              os:find_executable(Cmd) /= false ]);
+pick_pkg_manager({linux, "Ubuntu"}) ->
+    apt;
+pick_pkg_manager({linux, "RedHat"}) ->
+    yum;
+pick_pkg_manager({linux, "CentOS"}) ->
+    yum.    
 
 -define(BREW_SHELL_CHECK(Package),
         case Package of
