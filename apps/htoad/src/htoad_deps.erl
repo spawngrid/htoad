@@ -14,13 +14,30 @@ on_match(Engine, Assertion, {on, {match, MatchSpec}, Plan}) ->
     case ets:match_spec_run([Assertion], Ms) of
         [] ->
             Engine;
-        [_] ->
-            lager:debug("Condition ~p matching ~p for the plan of ~p has occurred", [Assertion, MatchSpec, Plan]),
-            seresye_engine:assert(Engine, Plan)
+        [Match] ->
+            SubstPlan = substitute(Plan, Match),
+            lager:debug("Condition ~p matching ~p for the plan of ~p has occurred", [Assertion, MatchSpec, SubstPlan]),
+            seresye_engine:assert(Engine, SubstPlan)
     end.
 
 on(Engine, Assertion, {on, Assertion, Plan}) ->
     lager:debug("Condition ~p for the plan of ~p has occurred", [Assertion, Plan]),
     seresye_engine:assert(Engine, Plan).
+
+    
+%% private
+
+substitute([], _Match) ->
+    [];
+substitute([H|T], Match) ->
+    [substitute(H, Match)|substitute(T, Match)];
+substitute('_', Match) ->
+    Match;
+substitute(Tuple, Match) when is_tuple(Tuple) ->
+    list_to_tuple(substitute(tuple_to_list(Tuple), Match));
+substitute(Other, _Match) ->
+    Other.
+
+
 
     
