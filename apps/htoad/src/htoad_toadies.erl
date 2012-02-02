@@ -24,7 +24,6 @@ apply_command(Engine, #'htoad.toadie'{ server = Pid }, {htoad_command, apply}) -
 %% private
 
 load(File) ->
-    lager:debug("Loading toadie ~s as requested",[File]),
     Spec = esupervisor:spec(#worker{
                                id = File,
                                modules = dynamic,
