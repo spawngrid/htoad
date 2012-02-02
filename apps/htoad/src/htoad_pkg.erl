@@ -12,12 +12,22 @@
 init(Engine, #init{}, {operating_system_name, OsName}) when not {rule, [{linux_distribution, _}]} ->
     PkgManager = pick_pkg_manager(OsName),
     lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
-    htoad:assert(Engine, {package_manager, PkgManager}).
+    case PkgManager of
+        unknown ->
+            Engine;
+        _ ->
+            htoad:assert(Engine, {package_manager, PkgManager})
+    end.
     
 init_linux(Engine, #init{}, {operating_system_name, linux}, {linux_distribution, Linux}) ->
     PkgManager = pick_pkg_manager({linux, Linux}),
     lager:debug("Initialized htoad_pkg (package manager: ~w)", [PkgManager]),
-    htoad:assert(Engine, {package_manager, PkgManager}).                      
+    case PkgManager of
+        unknown ->
+            Engine;
+        _ ->
+            htoad:assert(Engine, {package_manager, PkgManager})
+    end.
 
 ensure_package(Engine, #package{ ensure = present } = Package, {package_manager, PkgManager}) ->
     pkg_manager_check(Engine, PkgManager, Package).
@@ -43,7 +53,10 @@ pick_pkg_manager({linux, "Ubuntu"}) ->
 pick_pkg_manager({linux, "RedHat"}) ->
     yum;
 pick_pkg_manager({linux, "CentOS"}) ->
-    yum.    
+    yum;
+pick_pkg_manager(_) ->
+    unknown.
+
 
 -define(BREW_SHELL_CHECK(Package),
         case Package of
