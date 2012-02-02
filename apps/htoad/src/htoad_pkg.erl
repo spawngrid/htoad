@@ -94,8 +94,6 @@ pkg_manager_check(Engine, brew, #package{} = Package) ->
 pkg_manager_check(Engine, _UnsupportedPkgMgr, _Package) ->
     Engine.
 
-
-
 pkg_manager_install(Engine, brew, #package{} = Package) ->
     lager:debug("Installing package ~s",[format_package(Package)]),
     Shell = ?BREW_SHELL_INSTALL(Package),
