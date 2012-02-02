@@ -9,9 +9,9 @@ init(Engine, #init{}, {operating_system_type, unix}) ->
     lager:debug("Initialized htoad_shell"),
     Engine.
 
-command(Engine, #shell{ cmd = Cmd }) ->
+command(Engine, #shell{ cmd = Cmd } = Shell) ->
     lager:debug("Executing shell command: ~s", [Cmd]),
     Result = os:cmd(Cmd),
     lager:debug("Shell output for `~s`: ~s", [Cmd, Result]),
-    Engine.
+    htoad:assert(Engine, {output, Shell, Result}).
 
