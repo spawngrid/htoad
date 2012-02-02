@@ -6,7 +6,7 @@
 -include_lib("htoad/include/stdlib.hrl").
 
 %% API
--export([start_link/2, start_seresye/1]).
+-export([start_link/2, start_seresye/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -16,25 +16,26 @@
 %% ===================================================================
 
 start_link(Args, Files) ->
-    esupervisor:start_link({local, ?MODULE}, ?MODULE, [Args, Files]).
-
-start_seresye(Args) ->
-    {ok, Pid} = seresye:start(?ENGINE),
+    Result = esupervisor:start_link({local, ?MODULE}, ?MODULE, [Args, Files]),
     init_engine(Args),
-    {ok, Pid}.
+    Result.
+
+
+start_seresye() ->
+    seresye:start(?ENGINE).
 
 %% ===================================================================
 %% Supervisor callbacks
 %% ===================================================================
 
 
-init([Args, Files]) ->
+init([_Args, Files]) ->
     #one_for_one{
       children = [
                   #worker{
                      id = ?ENGINE,
                      restart = permanent,
-                     start_func = {htoad_sup, start_seresye, [Args]}
+                     start_func = {htoad_sup, start_seresye, []}
                     },
                   #one_for_one {
                            id = htoad_toadies,

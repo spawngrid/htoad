@@ -84,14 +84,21 @@ handle_call(_Request, _From, State) ->
 %%--------------------------------------------------------------------
 handle_cast(apply, #state{ file = File, toadie = Toadie, applied = false } = State) ->
     lager:debug("Applying toadie ~s",[File]),
-    htoad:assert(Toadie:main()),
-    lager:debug("Finished applying toadie ~s assertions", [File]),
+    case erlang:function_exported(Toadie, main, 0) of
+        true ->
+            htoad:assert(Toadie:main()),
+            lager:debug("Finished applying toadie ~s assertions", [File]);
+        false ->
+            lager:debug("No main() function in toadie ~s", [File])
+    end,
     {noreply, State#state { applied = true }};
 
 handle_cast(init, #state{ file = File } = State) ->
-    Toadie = load_file(File),
+    {Toadie, Bin} = load_file(File),
     htoad:assert(#'htoad.toadie'{ filename = File, module = Toadie, server = self() }),
     lager:debug("Loaded toadie ~s", [File]),
+    load_rules(File, Toadie, Bin),
+    dry_run(File, Toadie),
     {noreply, State#state{ toadie = Toadie }};
 
 handle_cast(_Info, State) ->
@@ -156,5 +163,35 @@ load_file(File) ->
         "-include(\"stdlib.hrl\").\n"
         "-compile(export_all).\n"
         "-import(htoad_utils, [" ++ Utils ++ "]).\n" ++ S ++ "\n \n",
-    dynamic_compile:load_from_string(Source, [{i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
-    Module.
+    {Module, Binary} = dynamic_compile:from_string(Source, [debug_info, {i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
+    code:load_binary(Module, htoad_utils:file(File ++ ".beam"), Binary),
+    {Module, Binary}.
+
+load_rules(File, Toadie, Bin) ->
+    case proplists:get_value(rules, Toadie:module_info(attributes)) of
+        undefined ->
+            ok;
+        Rules ->
+            lager:debug("[+ Adding following rules for ~s: ~p]", [File, Rules]),
+            Beam = htoad_utils:file(File ++ ".beam"),
+            file:write_file(Beam, Bin),
+            Result = seresye:add_rules(?ENGINE, Toadie),
+            file:delete(Beam),
+            Result = ok
+    end.
+        
+dry_run(File, Toadie) ->
+    {ok, DryEngine} = seresye:start(),
+    lager:debug("[~w Dry run for ~s]",[DryEngine, File]),
+    seresye:add_rules(DryEngine, htoad_toadies),
+    seresye:assert(DryEngine, dry_run),
+    case erlang:function_exported(Toadie, main, 0) of
+        true ->
+            seresye:assert(DryEngine, Toadie:main());
+        false ->
+            ok
+    end,
+    lager:debug("[~w Dry run is over for ~s]",[DryEngine, File]),
+    %% FIXME in seresye : seresye:stop(DryEngine).
+    (catch gen_server:call(DryEngine, stop)).
+    
