@@ -2,10 +2,10 @@ all: release
 
 release: compile
 		@rm -rf rel/htoad
-		@rebar generate
+		@./rebar generate
 
 compile: deps
-		@rebar compile
+		@./rebar compile
 
 deps:
-		@rebar get-deps
+		@./rebar get-deps
