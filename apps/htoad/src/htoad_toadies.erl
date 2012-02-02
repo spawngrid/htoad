@@ -18,7 +18,7 @@ load_file(Engine, {load, File}) ->
 
 
 load(File) ->
-    lager:debug("Starting worker for ~s module",[File]),
+    lager:debug("Loading module ~s as requested",[File]),
     Spec = esupervisor:spec(#worker{
                                id = File,
                                modules = dynamic,
