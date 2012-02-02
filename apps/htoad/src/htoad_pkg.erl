@@ -78,12 +78,22 @@ pkg_manager_check(Engine, brew, #package{} = Package) ->
                                     [],
                                     ['$1']}]},
                                  {package_check, Package, '_'})
-                 ]).
+                 ]);
+pkg_manager_check(Engine, UnsupportedPkgMgr, Package) ->
+    lager:debug("~w packaged is not yet supported, can't check package ~s", [UnsupportedPkgMgr, 
+                                                                             format_package(Package)]),
+    Engine.
+
+
 
 pkg_manager_install(Engine, brew, #package{} = Package) ->
     lager:debug("Installing package ~s",[format_package(Package)]),
     Shell = ?BREW_SHELL_INSTALL(Package),
-    htoad:assert(Engine, Shell).
+    htoad:assert(Engine, Shell);
+pkg_manager_install(Engine, UnsupportedPkgMgr, Package) ->
+    lager:debug("~w packaged is not yet supported, can't install package ~s", [UnsupportedPkgMgr, 
+                                                                               format_package(Package)]),
+    Engine.
 
 format_package(#package{ name = Name, version = undefined }) ->                                      
     Name;
