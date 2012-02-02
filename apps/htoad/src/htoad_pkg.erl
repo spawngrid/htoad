@@ -35,16 +35,29 @@ pick_pkg_manager(darwin) ->
                               os:find_executable(Cmd) /= false ]).
 
 -define(BREW_SHELL_CHECK(Package),
-        #shell{ cmd = "([ -d `brew --prefix`/Cellar/" ++ Package ++ " ] "
-                      "&& printf present) || printf missing" }).
+        case Package of
+            #package{ name = Name, version = undefined } ->
+                #shell{ cmd = "([ -d `brew --prefix`/Cellar/" ++ Name ++ " ] "
+                              "&& printf present) || printf missing" };
+            #package{ name = Name, version = Version } ->
+                #shell{ cmd = "([ -d `brew --prefix`/Cellar/" ++ Name ++ "/" ++ Version ++ " ] "
+                        "&& printf present) || printf missing" }
+        end).
+                
 
 -define(BREW_SHELL_INSTALL(Package),
-        #shell{ cmd = "(brew install " ++ Package ++ " && printf installed) "
-                      "|| printf not_installed" }).
+        case Package of
+            #package{ name = Name, version = undefined } ->
+                #shell{ cmd = "(brew install " ++ Name ++ " && printf installed) "
+                        "|| printf not_installed" };
+            #package{ name = Name, version = _Version } ->
+                #shell{ cmd = "(brew install --HEAD " ++ Name ++ " && printf installed) "
+                        "|| printf not_installed" }
+        end).
 
-pkg_manager_check(Engine, brew, #package{ version = undefined } = Package) ->
+pkg_manager_check(Engine, brew, #package{} = Package) ->
     lager:debug("Checking if package ~s has been already installed",[format_package(Package)]),
-    Shell = ?BREW_SHELL_CHECK(Package#package.name),
+    Shell = ?BREW_SHELL_CHECK(Package),
     seresye_engine:assert(Engine, 
                           [
                            Shell,
@@ -55,9 +68,9 @@ pkg_manager_check(Engine, brew, #package{ version = undefined } = Package) ->
                                           {package_check, Package, '_'})
                            ]).
 
-pkg_manager_install(Engine, brew, #package{ version = undefined } = Package) ->
+pkg_manager_install(Engine, brew, #package{} = Package) ->
     lager:debug("Installing package ~s",[format_package(Package)]),
-    Shell = ?BREW_SHELL_INSTALL(Package#package.name),
+    Shell = ?BREW_SHELL_INSTALL(Package),
     seresye_engine:assert(Engine, Shell).
 
 format_package(#package{ name = Name, version = undefined }) ->                                      
