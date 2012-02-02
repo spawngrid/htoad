@@ -57,5 +57,5 @@ init([Args, Files]) ->
 init_engine(Args) ->
     {ok, Modules} = application:get_env(htoad, modules),
     [ ok = seresye:add_rules(?ENGINE, Module) || Module <- Modules ],
-    seresye:assert(?ENGINE, [{htoad_argument, Arg} || Arg <- Args ]),
-    seresye:assert(?ENGINE, #init{}).
+    htoad:assert([{htoad_argument, Arg} || Arg <- Args ]),
+    htoad:assert(#init{}).

@@ -21,7 +21,7 @@ start(_StartType, _StartArgs) ->
         _ ->
             process_args(Args),
             Result = htoad_sup:start_link(Args, Files),
-            seresye:assert(?ENGINE, {htoad_command, apply}),
+            htoad:assert({htoad_command, apply}),
             Result
     end.
 

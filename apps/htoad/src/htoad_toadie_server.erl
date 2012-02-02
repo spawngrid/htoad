@@ -84,13 +84,13 @@ handle_call(_Request, _From, State) ->
 %%--------------------------------------------------------------------
 handle_cast(apply, #state{ file = File, toadie = Toadie, applied = false } = State) ->
     lager:debug("Applying toadie ~s",[File]),
-    seresye:assert(?ENGINE, Toadie:main()),
+    htoad:assert(Toadie:main()),
     lager:debug("Finished applying toadie ~s assertions", [File]),
     {noreply, State#state { applied = true }};
 
 handle_cast(init, #state{ file = File } = State) ->
     Toadie = load_file(File),
-    seresye:assert(?ENGINE, #'htoad.toadie'{ filename = File, module = Toadie, server = self() }),
+    htoad:assert(#'htoad.toadie'{ filename = File, module = Toadie, server = self() }),
     lager:debug("Loaded toadie ~s", [File]),
     {noreply, State#state{ toadie = Toadie }};
 
