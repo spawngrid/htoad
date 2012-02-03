@@ -173,6 +173,7 @@ load_file(File) ->
     {Module, Binary} = dynamic_compile:from_string(Source, [export_all,
                                                             return_errors, debug_info, 
                                                             {parse_transform, htoad_transform},
+                                                            {i, filename:dirname(File)},
                                                             {i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
     code:load_binary(Module, htoad_utils:file(File ++ ".beam"), Binary),
     {Module, Binary}.
