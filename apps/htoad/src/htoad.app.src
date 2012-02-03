@@ -12,7 +12,8 @@
                   getopt,
                   sasl,
                   dynamic_compile,
-                  erlydtl
+                  erlydtl,
+                  parse_trans
                  ]},
   {mod, { htoad_app, []}},
   {env, [

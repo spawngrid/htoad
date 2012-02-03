@@ -7,14 +7,14 @@ build_server() ->
           },
      on([ {operating_system_name, darwin},
           {package_manager, brew} ],
-        #package{ name = "git" })
+        #package{ name = "git1" })
 
     ].
 
 
 main() ->
     [
-     load("examples/base.htd"),
+     load("base.htd"),
      on({host, "spawn.local"}, {role, build_server}),
      on({role, build_server}, build_server())
     ].

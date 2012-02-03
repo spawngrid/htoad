@@ -168,9 +168,12 @@ load_file(File) ->
     Source =
         "-module('" ++ atom_to_list(Module) ++ "').\n"
         "-include(\"stdlib.hrl\").\n"
-        "-compile(export_all).\n"
+        "-htoad_absname(\"" ++ File ++ "\").\n"
         "-import(htoad_utils, [" ++ Utils ++ "]).\n" ++ S ++ "\n \n",
-    {Module, Binary} = dynamic_compile:from_string(Source, [return_errors, debug_info, {i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
+    {Module, Binary} = dynamic_compile:from_string(Source, [export_all,
+                                                            return_errors, debug_info, 
+                                                            {parse_transform, htoad_transform},
+                                                            {i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
     code:load_binary(Module, htoad_utils:file(File ++ ".beam"), Binary),
     {Module, Binary}.
 
