@@ -45,7 +45,7 @@ init([_Args, Files]) ->
                                  #worker {
                                     id = File,
                                     modules = dynamic,
-                                    restart = permanent,
+                                    restart = transient,
                                     start_func = {htoad_toadie_server, start_link, [File]}
                                    } || File <- Files ]
                           }
