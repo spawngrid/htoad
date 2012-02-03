@@ -15,7 +15,7 @@ init(Engine, #init{}) when not {rule, [{htoad_argument, {host, _}}]} ->
     initialize(Engine, hostname()).
 
 -define(LINUX_DISTRO_SHELL,
-        "([ `cat /etc/lsb-release | grep DISTRIB_ID` = DISTRIB_ID=Ubuntu ] && printf Ubuntu) ||
+        "([ -f /etc/lsb-release ] && [ `cat /etc/lsb-release | grep DISTRIB_ID` = DISTRIB_ID=Ubuntu ] && printf Ubuntu) ||
          ([ -f /etc/redhat-release ] && [ `cat /etc/redhat-release | grep RedHat | wc -l` = 1 ] && printf RedHat) ||
          ([ -f /etc/redhat-release ] && [ `cat /etc/redhat-release | grep CentOS | wc -l` = 1 ] && printf CentOS)").
 
