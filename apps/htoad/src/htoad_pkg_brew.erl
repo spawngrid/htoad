@@ -27,10 +27,10 @@ init(Engine, #init{}, {operating_system_name, darwin}) ->
 -define(BREW_SHELL_INSTALL(Package),
         case Package of
             #package{ name = Name, version = undefined } ->
-                #shell{ cmd = "(brew install " ++ Name ++ " && printf installed) "
+                #shell{ cmd = "(brew install " ++ Name ++ " 1>/dev/null 2>/dev/null && printf installed) "
                         "|| printf not_installed" };
             #package{ name = Name, version = _Version } ->
-                #shell{ cmd = "(brew install --HEAD " ++ Name ++ " && printf installed) "
+                #shell{ cmd = "(brew install --HEAD " ++ Name ++ " 1>/dev/null 2>/dev/null && printf installed) "
                         "|| printf not_installed" }
         end).
 
