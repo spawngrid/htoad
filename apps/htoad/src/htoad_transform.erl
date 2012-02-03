@@ -16,9 +16,9 @@ parse_transform(Forms, Options) ->
 do_transform(attribute,{attribute, _, htoad_absname, AbsName} = Attr, _Context, #state{} = State) ->
     {Attr, false, State#state{ absname = AbsName }};
 
-do_transform(application,{call, Line, {atom, Line1, load}, [File]}, _Context,
-                 #state{ absname = AbsName } = State) ->
-    {{call, Line, {atom, Line1, load}, [
+do_transform(application,{call, Line, {atom, Line1, F}, [File]}, _Context,
+                 #state{ absname = AbsName } = State) when F == load; F == file ->
+    {{call, Line, {atom, Line1, F}, [
                                         {call, Line, {remote, Line, 
                                                    {atom, Line, filename},
                                                    {atom, Line, join}},
