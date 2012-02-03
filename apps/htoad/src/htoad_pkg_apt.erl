@@ -2,10 +2,15 @@
 -include_lib("htoad/include/htoad.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
--export([init_ubuntu/4, ensure_package/3, package_not_present/3]).
--rules([init_ubuntu, ensure_package, package_not_present]).
+-export([init/4, ensure_package/3, package_not_present/3]).
+-rules([init, ensure_package, package_not_present]).
 
-init_ubuntu(Engine, #init{}, {operating_system_name, linux}, {linux_distribution, "Ubuntu"}) ->
+init(Engine, #init{}, {operating_system_name, linux}, {linux_distribution, "Ubuntu"}) ->
+    initialize(Engine);
+init(Engine, #init{}, {operating_system_name, linux}, {linux_distribution, "Debian"}) ->
+    initialize(Engine).
+
+initialize(Engine) ->
     lager:debug("APT has been selected as a package manager"),
     htoad:assert(Engine, {package_manager, apt}).
 
