@@ -16,12 +16,13 @@ init_linux(Engine, #init{}, {operating_system_name, linux}, {linux_distribution,
     initialize(Engine, {linux, Linux}).
 
 ensure_package(Engine, #package{ ensure = present } = Package, {package_manager, PkgManager}) ->
+    lager:debug("Checking if package ~s has been already installed",[format_package(Package)]),
     pkg_manager_check(Engine, PkgManager, Package).
 
 package_not_present(Engine, {package_check, 
                              #package{ ensure = present } = Package,
                              "missing"}, {package_manager, PkgManager}) ->
-    lager:debug("Package ~s is not present",[format_package(Package)]),
+    lager:debug("Package ~s is not present, installing",[format_package(Package)]),
     pkg_manager_install(Engine, PkgManager, Package).
 
 package_present(Engine, {package_check, 
@@ -64,6 +65,14 @@ pick_pkg_manager(_) ->
                 #shell{ cmd = "([ -d `brew --prefix`/Cellar/" ++ Name ++ "/" ++ Version ++ " ] "
                         "&& printf present) || printf missing" }
         end).
+
+-define(APT_SHELL_CHECK(Package),
+        case Package of
+            #package{ name = Name, version = undefined } ->
+                #shell{ cmd = "([ `dpkg -s " ++ Name ++ " 1>/dev/null 2>/dev/null | grep Status | wc -l` = 0 ] && printf missing) || printf present"};
+            #package{ name = Name, version = Version } ->
+                #shell{ cmd = "([ `dpkg -s " ++ Name ++ " 1>/dev/null 2>/dev/null | grep Status | wc -l` = 0 ] && printf missing) || (([ -z `dpkg -s " ++ Name ++ " | grep Version | grep " ++ Version ++ " | wc -l` ] && printf missing) || printf present) "}
+        end).
                 
 
 -define(BREW_SHELL_INSTALL(Package),
@@ -76,8 +85,18 @@ pick_pkg_manager(_) ->
                         "|| printf not_installed" }
         end).
 
+
+-define(APT_SHELL_INSTALL(Package),
+        case Package of
+            #package{ name = Name, version = undefined } ->
+                #shell{ cmd = "(apt-get -y install " ++ Name ++ " && printf installed) "
+                        "|| printf not_installed" };
+            #package{ name = Name, version = Version } ->
+                #shell{ cmd = "(apt-get -y install " ++ Name ++ " =" ++ Version ++ " && printf installed) "
+                        "|| printf not_installed" }
+        end).
+
 pkg_manager_check(Engine, brew, #package{} = Package) ->
-    lager:debug("Checking if package ~s has been already installed",[format_package(Package)]),
     Shell = ?BREW_SHELL_CHECK(Package),
     htoad:assert(Engine, 
                  [
@@ -88,12 +107,26 @@ pkg_manager_check(Engine, brew, #package{} = Package) ->
                                     ['$1']}]},
                                  {package_check, Package, '_'})
                  ]);
+pkg_manager_check(Engine, apt, #package{} = Package) ->
+    Shell = ?APT_SHELL_CHECK(Package),
+    htoad:assert(Engine, 
+                 [
+                  Shell,
+                  htoad_utils:on({match, 
+                                  [{{output, Shell, '$1'},
+                                    [],
+                                    ['$1']}]},
+                                 {package_check, Package, '_'})
+                 ]);
+
 pkg_manager_check(Engine, _UnsupportedPkgMgr, _Package) ->
     Engine.
 
 pkg_manager_install(Engine, brew, #package{} = Package) ->
-    lager:debug("Installing package ~s",[format_package(Package)]),
     Shell = ?BREW_SHELL_INSTALL(Package),
+    htoad:assert(Engine, Shell);
+pkg_manager_install(Engine, apt, #package{} = Package) ->
+    Shell = ?APT_SHELL_INSTALL(Package),
     htoad:assert(Engine, Shell);
 pkg_manager_install(Engine, _UnsupportedPkgMgr, _Package) ->
     Engine.
