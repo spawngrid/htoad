@@ -1,5 +1,5 @@
 Hypnotoad
 =========
 
-Hypnotoad is a heuristical provisioning deployment tool. 
+Hypnotoad is a heuristical provisioning & deployment tool. 
 
