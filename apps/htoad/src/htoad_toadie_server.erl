@@ -94,13 +94,19 @@ handle_cast(apply, #state{ file = File, toadie = Toadie, applied = false } = Sta
     {noreply, State#state { applied = true }};
 
 handle_cast(init, #state{ file = File } = State) ->
-    {Toadie, Bin} = load_file(File),
-    htoad:assert(#'htoad.toadie'{ filename = File, module = Toadie, server = self() }),
-    lager:debug("Loaded toadie ~s", [File]),
-    load_rules(File, Toadie, Bin),
-    dry_run(File, Toadie),
-    htoad:assert({htoad_toadie_server_ready, self()}),
-    {noreply, State#state{ toadie = Toadie }};
+    try load_file(File) of
+        {Toadie, Bin} ->
+            load_file(File),
+            htoad:assert(#'htoad.toadie'{ filename = File, module = Toadie, server = self() }),
+            lager:debug("Loaded toadie ~s", [File]),
+            load_rules(File, Toadie, Bin),
+            dry_run(File, Toadie),
+            htoad:assert({htoad_toadie_server_ready, self()}),
+            {noreply, State#state{ toadie = Toadie }}
+    catch throw:{_, compile_forms, Errors} ->
+            lager:error("Errors compiling ~s: ~p", [File, Errors]),
+            {stop, shutdown, State}
+    end;
 
 handle_cast(_Info, State) ->
     {noreply, State}.
@@ -164,7 +170,7 @@ load_file(File) ->
         "-include(\"stdlib.hrl\").\n"
         "-compile(export_all).\n"
         "-import(htoad_utils, [" ++ Utils ++ "]).\n" ++ S ++ "\n \n",
-    {Module, Binary} = dynamic_compile:from_string(Source, [debug_info, {i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
+    {Module, Binary} = dynamic_compile:from_string(Source, [return_errors, debug_info, {i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
     code:load_binary(Module, htoad_utils:file(File ++ ".beam"), Binary),
     {Module, Binary}.
 
