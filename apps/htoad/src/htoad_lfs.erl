@@ -3,6 +3,8 @@
 -include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
+-include_lib("kernel/include/file.hrl").
+
 -export([init/2, ensure_file_present/2, 
         ensure_dir_present/2]).
 -export([fs_file_present/2, fs_file_absent/2, fs_dir_present/2, fs_dir_absent/2]).
@@ -38,7 +40,7 @@ fs_file_present(Engine, {file_request, #file{ ensure = present,
     case filelib:is_regular(File#file.path) of
         true ->
             lager:debug("File ~s exists",[File#file.path]),
-            htoad:assert(Engine, load_content(File));
+            htoad:assert(Engine, load_content(load_mode(File)));
         false ->
             Engine
     end.
@@ -62,7 +64,7 @@ fs_dir_present(Engine, {file_request, #file{ ensure = present,
     case filelib:is_dir(File#file.path) of
         true ->
             lager:debug("Directory ~s exists",[File#file.path]),
-            htoad:assert(Engine, File);
+            htoad:assert(Engine, load_mode(File));
         false ->
             Engine
     end.
@@ -90,6 +92,10 @@ chmod(Path, Mode) ->
             lager:debug("Ensured ~s mode ~w",[Path, Mode])
     end.
 
+load_mode(#file{} = File) ->
+    {ok, #file_info{ mode = Mode }} = file:read_file_info(File#file.path),
+    File#file{ mode = Mode }.
+        
 load_content(#file{ content = dontread } = File) ->
     File;
 load_content(#file{ content = "" } = File) ->
