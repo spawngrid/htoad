@@ -3,7 +3,6 @@
 -include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
--export([init/3, ensure_package/3, package_not_present/3]).
 -rules([init, ensure_package, package_not_present]).
 
 init(Engine, #init{}, {operating_system_name, darwin}) ->

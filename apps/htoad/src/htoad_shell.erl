@@ -3,7 +3,6 @@
 -include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
--export([init/3, command/2]).
 -rules([init, command]).
 
 init(Engine, #init{}, {operating_system_type, unix}) ->

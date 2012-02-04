@@ -3,8 +3,7 @@
 -include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
--export([ensure_package/3, 
-         package_not_present/3, package_present/2]).
+-export([ensure_package/3, package_not_present/3]).
 -export([format_package/1]).
 
 -rules([package_present]).

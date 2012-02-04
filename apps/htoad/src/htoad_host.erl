@@ -5,7 +5,6 @@
 
 -neg_rule({init, [{htoad_argument, {host, '__IGNORE_UNDERSCORE__'}}]}).
 
--export([init/2, init_with_hostname_overriden/3, linux/2]).
 -rules([init, init_with_hostname_overriden, linux]).
 
 init_with_hostname_overriden(Engine, #init{}, {htoad_argument, {host, Hostname}}) ->

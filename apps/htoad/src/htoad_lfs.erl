@@ -5,9 +5,6 @@
 
 -include_lib("kernel/include/file.hrl").
 
--export([init/2, ensure_file_present/2, 
-        ensure_dir_present/2]).
--export([fs_file_present/2, fs_file_absent/2, fs_dir_present/2, fs_dir_absent/2]).
 -rules([init, ensure_file_present, ensure_dir_present,
         fs_file_present, fs_file_absent, fs_dir_present, fs_dir_absent]).
 
