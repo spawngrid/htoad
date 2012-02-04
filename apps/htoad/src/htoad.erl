@@ -25,14 +25,14 @@ add_rules(Rules) ->
     FReqs = proplists:get_value(htoad_file_requests, Module:module_info(attributes), []),
     assert([{file_request, F} || F <- FReqs]).
 
-assert(Fact) ->
+assert(Fact) when is_list(Fact); is_tuple(Fact) ->
     seresye:assert(?ENGINE, Fact).
 
-assert(Engine, Fact) ->
+assert(Engine, Fact) when is_list(Fact); is_tuple(Fact) ->
     seresye_engine:assert(Engine, Fact).
 
-retract(Fact) ->
+retract(Fact) when is_list(Fact); is_tuple(Fact) ->
     seresye:assert(?ENGINE, Fact).
 
-retract(Engine, Fact) ->
+retract(Engine, Fact) when is_list(Fact); is_tuple(Fact) ->
     seresye_engine:retract(Engine, Fact).
