@@ -1,5 +1,6 @@
 -module(htoad_pkg_apt).
 -include_lib("htoad/include/htoad.hrl").
+-include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
 -export([init/4, ensure_package/3, package_not_present/3]).

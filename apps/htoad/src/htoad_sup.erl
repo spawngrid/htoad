@@ -57,7 +57,7 @@ init([_Args, Files]) ->
 
 init_engine(Args) ->
     {ok, Modules} = application:get_env(htoad, modules),
-    [ ok = seresye:add_rules(?ENGINE, Module) || Module <- Modules ],
+    [ ok = htoad:add_rules(Module) || Module <- Modules ],
     htoad:assert([{htoad_argument, Arg} || Arg <- Args ]),
     Signals = [ {htoad_toadie_server_ready, Pid} || {_, Pid, _, _} <- supervisor:which_children(htoad_toadies) ],
     htoad:assert(htoad_utils:on(Signals, #init{})).

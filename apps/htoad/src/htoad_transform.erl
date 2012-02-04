@@ -1,20 +1,53 @@
 -module(htoad_transform).
 -export([parse_transform/2]).
+-include_lib("htoad/include/stdlib.hrl").
 
 -record(state,{ 
+          rules = [],
+          current_function = [], %% [] :: atom()
+          file_requests = [],
           options,
           absname
          }).
 
 parse_transform(Forms, Options) ->
-    {Forms1, _State} = parse_trans:transform(fun do_transform/4, 
+    {Forms1, State} = parse_trans:transform(fun do_transform/4, 
                                              #state{ options = Options },
                                              Forms, Options),
     Result = parse_trans:revert(Forms1),
-    Result.
+    parse_trans:do_insert_forms(above, [{attribute, 0, htoad_file_requests, State#state.file_requests}], Result, parse_trans:initial_context(Result, Options)).
+
+transform(Fun, State, Form, Context) when is_tuple(Form) ->
+    {L,Rec,State1} = transform(Fun, State, [Form], Context),
+    {hd(L),Rec,State1};
+
+transform(Fun, State, Forms, Context) when is_list(Forms) ->
+    {Form1, State1} = parse_trans:do_transform(Fun,
+                                               State,
+                                               Forms, 
+                                               Context),
+    {parse_trans:revert(Form1),false,State1}.
+
+
+do_transform(attribute,{attribute, _, rules, Rules} = Attr, _Context, #state{} = State) ->
+    {Attr, false, State#state{ rules = Rules }};
 
 do_transform(attribute,{attribute, _, htoad_absname, AbsName} = Attr, _Context, #state{} = State) ->
     {Attr, false, State#state{ absname = AbsName }};
+
+do_transform(function, {function, _, Fun, _Arity, _Cs} = Form, _Context, #state{ rules = Rules } = State) ->
+    case lists:member(Fun, Rules) of
+        false ->
+            {Form, true, State#state{ current_function = [] }};
+        true ->
+            {Form, true, State#state{ current_function = Fun }}
+    end;
+
+do_transform(clause, {clause, Line, Head, G, B}, Context,
+             #state{ current_function = CurFun} = State) when CurFun /= [] ->
+    {Head1, _Rec, State1} = transform(fun clause_scanner/4, State, Head, Context),
+    {B1, Rec, State2} = transform(fun do_transform/4, State1, B, Context),
+    {{clause, Line, Head1, G, B1}, Rec, State2};
 
 do_transform(application,{call, Line, {atom, Line1, F}, [File]}, _Context,
                  #state{ absname = AbsName } = State) when F == load; F == file ->
@@ -35,6 +68,34 @@ do_transform(application,{call, Line, {atom, Line1, F}, [File]}, _Context,
 do_transform(_Type, Form, _Context, State) ->
     {Form, true, State}.
 
+
+clause_scanner(record_expr, {record, _L, file, Fields} = Form, _Context, 
+               #state{ file_requests = FReqs } = State) ->
+    case scan_file_record(Fields) of
+        #file{ producer = fs, path = Path } = File when is_list(Path) ->
+            {Form, true, State#state{ file_requests = [File|FReqs] }};
+        _ ->
+            {Form, true, State}
+    end;
+clause_scanner(_Type, Form, _Context, State) ->
+    {Form, true, State}.
+
+
+scan_file_record(Fields) ->
+    DefaultFile = #file{},
+    RFields = record_info(fields, file),
+    {RFields, Vals} = lists:unzip(scan_file_record_1(Fields, lists:zip(RFields, tl(tuple_to_list(DefaultFile))))),
+    list_to_tuple([file|Vals]).
+
+scan_file_record_1([], Acc) ->
+    Acc;
+scan_file_record_1([{record_field, _, {atom, _, _Name}, {var, _, _}}|T], Acc) ->
+    scan_file_record_1(T, Acc);
+scan_file_record_1([{record_field, _, {atom, _, Name}, Value0}|T], Acc) ->
+    Value = erl_syntax:concrete(Value0),
+    scan_file_record_1(T, lists:keyreplace(Name, 1, Acc, {Name, Value})).
+    
+    
 
 list_to_cons([],Line) ->
     {nil,Line};

@@ -13,7 +13,8 @@
                   sasl,
                   dynamic_compile,
                   erlydtl,
-                  parse_trans
+                  parse_trans,
+                  syntax_tools
                  ]},
   {mod, { htoad_app, []}},
   {env, [

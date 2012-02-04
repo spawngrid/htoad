@@ -167,12 +167,12 @@ load_file(File) ->
                         ", "),
     Source =
         "-module('" ++ atom_to_list(Module) ++ "').\n"
+        "-include(\"toadie.hrl\").\n"
         "-include(\"stdlib.hrl\").\n"
         "-htoad_absname(\"" ++ File ++ "\").\n"
         "-import(htoad_utils, [" ++ Utils ++ "]).\n" ++ S ++ "\n \n",
     {Module, Binary} = dynamic_compile:from_string(Source, [export_all,
                                                             return_errors, debug_info, 
-                                                            {parse_transform, htoad_transform},
                                                             {i, filename:dirname(File)},
                                                             {i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
     code:load_binary(Module, htoad_utils:file(File ++ ".beam"), Binary),
@@ -186,7 +186,7 @@ load_rules(File, Toadie, Bin) ->
             lager:debug("[+ Adding following rules for ~s: ~p]", [File, Rules]),
             Beam = htoad_utils:file(File ++ ".beam"),
             file:write_file(Beam, Bin),
-            Result = seresye:add_rules(?ENGINE, Toadie),
+            Result = htoad:add_rules(Toadie),
             file:delete(Beam),
             Result = ok
     end.

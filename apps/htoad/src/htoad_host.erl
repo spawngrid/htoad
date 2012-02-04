@@ -1,5 +1,6 @@
 -module(htoad_host).
 -include_lib("htoad/include/htoad.hrl").
+-include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
 -neg_rule({init, [{htoad_argument, {host, '__IGNORE_UNDERSCORE__'}}]}).

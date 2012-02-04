@@ -1,5 +1,6 @@
 -module(htoad_io).
 -include_lib("htoad/include/htoad.hrl").
+-include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
 -export([init/2, print/2]).

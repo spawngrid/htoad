@@ -22,7 +22,9 @@
           path :: undefined | string(),
           ensure = present :: present | absent,
           mode,
-          content = ""
+          content = "",
+          %% special flag denoting file request
+          producer :: undefined | fs
         }).
 
 -record(package,

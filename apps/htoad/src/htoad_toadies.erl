@@ -1,6 +1,7 @@
 -module(htoad_toadies).
 
 -include_lib("htoad/include/htoad.hrl").
+-include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
 -include_lib("esupervisor/include/esupervisor.hrl").

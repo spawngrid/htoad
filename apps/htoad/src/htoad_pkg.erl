@@ -1,5 +1,6 @@
 -module(htoad_pkg).
 -include_lib("htoad/include/htoad.hrl").
+-include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
 -export([ensure_package/3, 
