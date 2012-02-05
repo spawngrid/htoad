@@ -36,5 +36,6 @@
 
 -record(shell,
         {
-          cmd
+          cmd,
+          run_as :: undefined | superuser | term()
         }).
