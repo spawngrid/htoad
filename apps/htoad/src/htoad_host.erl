@@ -5,28 +5,25 @@
 
 -neg_rule({init, [{htoad_argument, {host, '__IGNORE_UNDERSCORE__'}}]}).
 
--rules([init, init_with_hostname_overriden, linux]).
+-rules([init, init_with_hostname_overriden, linux_ubuntu, linux_redhat]).
 
 init_with_hostname_overriden(Engine, #init{}, {htoad_argument, {host, Hostname}}) ->
     initialize(Engine, Hostname).
-    
+
 init(Engine, #init{}) when not {rule, [{htoad_argument, {host, _}}]} ->
     initialize(Engine, hostname()).
 
--define(LINUX_DISTRO_SHELL,
-        "([ -f /etc/lsb-release ] && [ `cat /etc/lsb-release | grep DISTRIB_ID` = DISTRIB_ID=Ubuntu ] && printf Ubuntu) ||
-         ([ -f /etc/redhat-release ] && [ `cat /etc/redhat-release | grep RedHat | wc -l` = 1 ] && printf RedHat) ||
-         ([ -f /etc/redhat-release ] && [ `cat /etc/redhat-release | grep CentOS | wc -l` = 1 ] && printf CentOS)").
+linux_ubuntu(Engine, #file{ path="/etc/lsb-release", producer = fs, content = Content }, {operating_system_name, linux}) ->
+    {match, [Dist]} = re:run(Content,".*DISTRIB_ID=(.*).*",[{capture,[1],list}]),
+    lager:debug("Detected Linux ~s", [Dist]),
+    htoad:assert(Engine, {linux_distribution, Dist}).
 
-linux(Engine, {operating_system_name, linux}) ->
-    Shell = #shell{ cmd = ?LINUX_DISTRO_SHELL },
-    lager:debug("Detecting Linux distribution"),
-    htoad:assert(Engine, [Shell,
-                          htoad_utils:on({match,
-                                          [{{output, Shell, '$1'},
-                                            [],
-                                            ['$1']}]},
-                                         {linux_distribution, '_'})]).
+
+linux_redhat(Engine, #file{ path="/etc/redhat-release", producer = fs, content = Content }, {operating_system_name, linux}) ->
+    {match, [Dist]} = re:run(Content,".*(CentOS|RedHat).*",[{capture,[1],list}]),
+    lager:debug("Detected Linux ~s", [Dist]),
+    htoad:assert(Engine, {linux_distribution, Dist}).
+
 
 %% private
 
