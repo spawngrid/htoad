@@ -3,7 +3,7 @@
 -include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
--neg_rule({init, [{htoad_argument, {host, '__IGNORE_UNDERSCORE__'}}]}).
+-rule_neg({init, [{htoad_argument, {host, '__IGNORE_UNDERSCORE__'}}]}).
 
 -rules([init, init_with_hostname_overriden, linux_lsb, linux_redhat]).
 
