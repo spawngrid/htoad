@@ -79,13 +79,13 @@ do_transform(_Type, Form, _Context, State) ->
 clause_scanner(record_expr, {record, _L, file, Fields} = Form, _Context, 
                #state{ file_requests = FReqs } = State) ->
     case scan_file_record(Fields) of
-        #file{ producer = fs, path = Path } = File when is_list(Path) ->
-            {Form, true, State#state{ file_requests = [File|FReqs] }};
+        #file{ path = Path } = File when is_list(Path) ->
+            {Form, false, State#state{ file_requests = [File|FReqs] }};
         _ ->
-            {Form, true, State}
+            {Form, false, State}
     end;
 clause_scanner(_Type, Form, _Context, State) ->
-    {Form, true, State}.
+    {Form, false, State}.
 
 
 scan_file_record(Fields) ->

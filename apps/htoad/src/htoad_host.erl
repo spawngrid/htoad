@@ -11,13 +11,13 @@ init_with_hostname_overriden(Engine, #init{}, {htoad_argument, {host, Hostname}}
 init(Engine, #init{}) when not {rule, [{htoad_argument, {host, _}}]} ->
     initialize(Engine, hostname()).
 
-linux_lsb(Engine, #file{ path="/etc/lsb-release", producer = fs, content = Content }, {operating_system_name, linux}) ->
+linux_lsb(Engine, #file{ path="/etc/lsb-release", content = Content }, {operating_system_name, linux}) ->
     {match, [Dist]} = re:run(Content,".*DISTRIB_ID=(.*).*",[{capture,[1],list}]),
     lager:debug("Linux distribution: ~s", [Dist]),
     htoad:assert(Engine, {linux_distribution, Dist}).
 
 
-linux_redhat(Engine, #file{ path="/etc/redhat-release", producer = fs, content = Content }, {operating_system_name, linux}) ->
+linux_redhat(Engine, #file{ path="/etc/redhat-release", content = Content }, {operating_system_name, linux}) ->
     {match, [Dist]} = re:run(Content,".*(CentOS|RedHat).*",[{capture,[1],list}]),
     lager:debug("Linux distribution: ~s", [Dist]),
     htoad:assert(Engine, {linux_distribution, Dist}).

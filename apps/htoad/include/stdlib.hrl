@@ -20,18 +20,14 @@
         {
           type = file :: file | dir,
           path :: undefined | string(),
-          ensure = present :: present | absent,
           mode,
-          content = "",
-          %% special flag denoting file request
-          producer :: undefined | fs
+          content = ""
         }).
 
 -record(package,
         {
           name,
-          version,
-          ensure = present :: present | absent
+          version
         }).
 
 -record(shell,

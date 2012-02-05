@@ -9,12 +9,12 @@
 -rules([package_present]).
 
 package_present(Engine, {package_check, 
-                         #package{ ensure = present } = Package,
+                         #package{} = Package,
                          "present"}) ->
     lager:debug("Package ~s is present, no action needed",[format_package(Package)]),
     Engine.
 
-ensure_package(Engine, #package{ ensure = present } = Package, Command) ->
+ensure_package(Engine, #package{} = Package, Command) ->
     lager:debug("Checking if package ~s is present",[format_package(Package)]),
     htoad:assert(Engine, 
                  [
@@ -28,7 +28,10 @@ ensure_package(Engine, #package{ ensure = present } = Package, Command) ->
 
 package_not_present(Engine, #package{} = Package, Command) ->
     lager:debug("Package ~s is absent, installing",[format_package(Package)]),
-    htoad:assert(Engine, Command).
+    htoad:assert(Engine, [Command, htoad_utils:on({match, 
+                                                   [{{output, Command, "installed"},
+                                                     [],
+                                                     [true]}]}, Package)]).
 
 format_package(#package{ name = Name, version = undefined }) ->                                      
     Name;
