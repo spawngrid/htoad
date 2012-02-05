@@ -6,35 +6,34 @@
 -include_lib("kernel/include/file.hrl").
 
 -rules([init, ensure_file_present, ensure_dir_present,
-        fs_file_present, fs_file_absent, fs_dir_present, fs_dir_absent]).
+        fs_file_present, fs_dir_present]).
 
 init(Engine, #init{}) ->
     lager:debug("Initialized htoad_lfs"),
     Engine.
 
-ensure_file_present(Engine, #file{ ensure = present, 
-                                   type = file,
-                                   producer = undefined
-                                 } = File) ->
+ensure_file_present(Engine, {ensure, present, 
+                             #file{
+                                    type = file
+                                  } = File}) ->
     filelib:ensure_dir(File#file.path),
     file:write_file(File#file.path, File#file.content),
     lager:debug("Ensured file ~s",[File#file.path]),
     chmod(File#file.path, File#file.mode),
-    Engine.
+    htoad:assert(Engine, File).
 
-ensure_dir_present(Engine, #file{ ensure = present,
-                                  type = dir,
-                                  producer = undefined
-                               } = Dir) ->
+ensure_dir_present(Engine, {ensure, present, 
+                            #file{ 
+                                   type = dir
+                                 } = Dir}) ->
     ok = filelib:ensure_dir(Dir#file.path ++ "/"),
     lager:debug("Ensured directory ~s",[Dir#file.path]),
     chmod(Dir#file.path, Dir#file.mode),
-    Engine.
+    htoad:assert(Engine, Dir).
 
 %% file system
-fs_file_present(Engine, {file_request, #file{ ensure = present,
-                                              type = file,
-                                              producer = fs
+fs_file_present(Engine, {file_request, #file{
+                                              type = file
                                             } = File}) ->
     case filelib:is_regular(File#file.path) of
         true ->
@@ -44,39 +43,14 @@ fs_file_present(Engine, {file_request, #file{ ensure = present,
             Engine
     end.
 
-fs_file_absent(Engine, {file_request, #file{ ensure = absent,
-                                             type = file,
-                                             producer = fs
-                                           } = File}) ->
-    case filelib:is_regular(File#file.path) of
-        false ->
-            lager:debug("File ~s does not exist",[File#file.path]),
-            htoad:assert(Engine, File);
-        true ->
-            Engine
-    end.
-
-fs_dir_present(Engine, {file_request, #file{ ensure = present,
-                                             type = dir,
-                                             producer = fs
+fs_dir_present(Engine, {file_request, #file{
+                                             type = dir
                                             } = File}) ->
     case filelib:is_dir(File#file.path) of
         true ->
             lager:debug("Directory ~s exists",[File#file.path]),
             htoad:assert(Engine, load_mode(File));
         false ->
-            Engine
-    end.
-
-fs_dir_absent(Engine, {file_request, #file{ ensure = absent,
-                                            type = dir,
-                                            producer = fs
-                                           } = File}) ->
-    case filelib:is_dir(File#file.path) of
-        false ->
-            lager:debug("Directory ~s does not exist",[File#file.path]),
-            htoad:assert(Engine, File);
-        true ->
             Engine
     end.
 

@@ -1,13 +1,15 @@
 -define(BASE_DIR, "/tmp/srv").
 
 build_server() ->
+    File = #file{ type = dir,
+                  path = filename:join([?BASE_DIR, "build_dir"])
+                },
+    
     [
-     #file{ type = dir,
-            path = filename:join([?BASE_DIR, "build_dir"])
-          },
+     ensure(present, File),
      on([ {operating_system_name, darwin},
           {package_manager, brew} ],
-        #package{ name = "git1" })
+        ensure(present, #package{ name = "git" }))
 
     ].
 

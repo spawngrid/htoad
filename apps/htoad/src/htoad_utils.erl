@@ -1,5 +1,8 @@
 -module(htoad_utils).
--export([on/2, load/1, module/1, file/1, render/2, render/3, render/4]).
+-export([ensure/2, on/2, load/1, module/1, file/1, render/2, render/3, render/4]).
+
+ensure(What, Object) ->
+    {ensure, What, Object}.
 
 on([], Plan) ->
     Plan;

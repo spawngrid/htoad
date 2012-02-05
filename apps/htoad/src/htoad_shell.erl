@@ -23,7 +23,7 @@ command_run_in_superuser(Engine, #shell{ run_as = superuser } = Shell,
     command(Engine, Shell).
 
 command_run_as_superuser(Engine, #shell{ cmd = Cmd, run_as = superuser } = Shell,
-                         #file{ path = "/usr/bin/sudo", producer = fs,
+                         #file{ path = "/usr/bin/sudo",
                                 content = dontread }) when not {rule, [{?MODULE, superuser}]} ->
     lager:debug("Executing shell command as a super user (via sudo): ~s", [Cmd]),
     Result = string:strip(os:cmd("/usr/bin/sudo -n " ++ Cmd), right, $\n),

@@ -34,10 +34,10 @@ init(Engine, #init{}, {operating_system_name, darwin}) ->
                         "|| printf not_installed" }
         end).
 
-ensure_package(Engine, #package{ ensure = present } = Package, {package_manager, brew}) ->
+ensure_package(Engine, {ensure, present, #package{} = Package}, {package_manager, brew}) ->
     htoad_pkg:ensure_package(Engine, Package, ?BREW_SHELL_CHECK(Package)).
 
 package_not_present(Engine, {package_check, 
-                             #package{ ensure = present } = Package,
+                             #package{} = Package,
                              "missing"}, {package_manager, brew}) ->
     htoad_pkg:package_not_present(Engine, Package, ?BREW_SHELL_INSTALL(Package)).

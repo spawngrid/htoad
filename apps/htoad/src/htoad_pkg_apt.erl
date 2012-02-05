@@ -34,10 +34,10 @@ initialize(Engine) ->
                         run_as = superuser }
         end).
 
-ensure_package(Engine, #package{ ensure = present } = Package, {package_manager, apt}) ->
+ensure_package(Engine, {ensure, present, #package{} = Package}, {package_manager, apt}) ->
     htoad_pkg:ensure_package(Engine, Package, ?APT_SHELL_CHECK(Package)).
 
 package_not_present(Engine, {package_check, 
-                             #package{ ensure = present } = Package,
+                             #package{} = Package,
                              "missing"}, {package_manager, apt}) ->
     htoad_pkg:package_not_present(Engine, Package, ?APT_SHELL_INSTALL(Package)).
