@@ -26,10 +26,12 @@ initialize(Engine) ->
         case Package of
             #package{ name = Name, version = undefined } ->
                 #shell{ cmd = "(apt-get -y install " ++ Name ++ " && printf installed) "
-                        "|| printf not_installed" };
+                        "|| printf not_installed",
+                        run_as = superuser };
             #package{ name = Name, version = Version } ->
                 #shell{ cmd = "(apt-get -y install " ++ Name ++ " =" ++ Version ++ " && printf installed) "
-                        "|| printf not_installed" }
+                        "|| printf not_installed",
+                        run_as = superuser }
         end).
 
 ensure_package(Engine, #package{ ensure = present } = Package, {package_manager, apt}) ->
