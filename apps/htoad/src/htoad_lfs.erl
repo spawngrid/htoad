@@ -13,7 +13,8 @@ init(Engine, #init{}) ->
     Engine.
 
 ensure_file_present(Engine, #file{ ensure = present, 
-                                   type = file 
+                                   type = file,
+                                   producer = undefined
                                  } = File) ->
     filelib:ensure_dir(File#file.path),
     file:write_file(File#file.path, File#file.content),
@@ -22,7 +23,8 @@ ensure_file_present(Engine, #file{ ensure = present,
     Engine.
 
 ensure_dir_present(Engine, #file{ ensure = present,
-                                 type = dir
+                                  type = dir,
+                                  producer = undefined
                                } = Dir) ->
     ok = filelib:ensure_dir(Dir#file.path ++ "/"),
     lager:debug("Ensured directory ~s",[Dir#file.path]),
