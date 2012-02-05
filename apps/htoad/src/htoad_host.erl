@@ -8,7 +8,6 @@
 -rules([init, init_with_hostname_overriden, linux]).
 
 init_with_hostname_overriden(Engine, #init{}, {htoad_argument, {host, Hostname}}) ->
-    lager:debug("Overriding host name to ~s",[Hostname]),
     initialize(Engine, Hostname).
     
 init(Engine, #init{}) when not {rule, [{htoad_argument, {host, _}}]} ->
@@ -38,6 +37,10 @@ initialize(Engine, Hostname) ->
                                     {operating_system_type, OsFamily},
                                     {operating_system_name, OsName},
                                     {operating_system_version, OsVersion}]),
+    lager:debug("Hostname: ~s",[Hostname]),
+    lager:debug("Operating system type: ~p",[OsFamily]),
+    lager:debug("Operating system name: ~p",[OsName]),
+    lager:debug("Operating system version: ~p",[OsVersion]),
     lager:debug("Initialized htoad_host"),
     Engine1.
 
