@@ -6,8 +6,6 @@
 -rules([init, user, superuser, command_run_in_superuser,
         command_run_as_superuser, command]).
 
--rule_neg({command_run_as_superuser, [{?MODULE, superuser}]}).
-
 init(Engine, #init{}, {operating_system_type, unix}) ->
     lager:debug("Initialized htoad_shell"),
     htoad:assert(Engine, #shell{ cmd = "whoami" }).
