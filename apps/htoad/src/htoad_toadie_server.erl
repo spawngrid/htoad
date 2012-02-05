@@ -172,6 +172,7 @@ load_file(File) ->
         "-htoad_absname(\"" ++ File ++ "\").\n"
         "-import(htoad_utils, [" ++ Utils ++ "]).\n" ++ S ++ "\n \n",
     {Module, Binary} = dynamic_compile:from_string(Source, [export_all,
+                                                            nowarn_unused_function,nowarn_unused_vars,nowarn_unused_record,
                                                             return_errors, debug_info, 
                                                             {parse_transform, lager_transform}, 
                                                             {i, filename:dirname(File)},

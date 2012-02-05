@@ -1,6 +1,7 @@
 -module(htoad_transform).
 -export([parse_transform/2]).
 -include_lib("htoad/include/stdlib.hrl").
+-compile({parse_transform, lager_transform}).
 
 -record(state,{ 
           rules = [],
@@ -12,7 +13,25 @@
           absname
          }).
 
+-record(context, {module,
+                  function,
+                  arity,
+                  file,
+                  options}).
+
+
 parse_transform(Forms, Options) ->
+    #context{ file = File } = parse_trans:initial_context(Forms, Options),
+    case erl_lint:module(Forms, File, [nowarn_unused_function,nowarn_unused_vars,nowarn_unused_record]) of
+        {error, Errors, Warnings} ->
+            (length(Warnings) > 0 andalso
+             lager:debug("erl_lint warnings in ~s: ~p", [File, Warnings])),
+            throw({erl_lint, Errors});
+        {ok, Warnings} when is_list(Warnings), length(Warnings) > 0 ->
+            lager:debug("erl_lint warnings in ~s: ~p", [File, Warnings]);
+        _ ->
+            ok
+    end,
     {Forms1, State} = parse_trans:transform(fun do_transform/4, 
                                              #state{ options = Options },
                                              Forms, Options),
