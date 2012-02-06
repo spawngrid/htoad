@@ -15,11 +15,24 @@
         }).
 
 %%
+-record(user, 
+        {
+          id,
+          name
+        }).
+
+-record(group, 
+        {
+          id,
+          name
+        }).
 
 -record(file,
         {
           type = file :: file | dir,
           path :: undefined | string(),
+          user :: #user{} | string() | integer(),
+          group :: #group{} | string() | integer(),
           mode,
           content = ""
         }).
