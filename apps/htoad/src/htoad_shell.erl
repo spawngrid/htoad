@@ -19,7 +19,7 @@ user(Engine, {output, #shell{ cmd = "id" }, Result}) ->
                           #group{ id = list_to_integer(Gid), name = Group }]).
 
 superuser(Engine, #init{}, {operating_system_type, unix},
-          {user, "root"}) ->
+          #user{ name = "root" }) ->
     htoad:assert(Engine, {?MODULE, superuser}).
 
 command_run_in_superuser(Engine, #shell{ run_as = superuser } = Shell,
