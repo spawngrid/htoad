@@ -3,16 +3,20 @@
 -include_lib("htoad/include/toadie.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
+-define(REGEX, ".*uid=([^\(]*)\\(([^\)]*).*gid=([^\\(]*)\\(([^\)]*).*").
+
 -rules([init, user, superuser, command_run_in_superuser,
         command_run_as_superuser, command]).
 
 init(Engine, #init{}, {operating_system_type, unix}) ->
     lager:debug("Initialized htoad_shell"),
-    htoad:assert(Engine, #shell{ cmd = "whoami" }).
+    htoad:assert(Engine, #shell{ cmd = "id" }).
 
-user(Engine, {output, #shell{ cmd = "whoami"}, User}) ->
-    lager:debug("Current user: ~s", [User]),
-    htoad:assert(Engine, {user, User}).
+user(Engine, {output, #shell{ cmd = "id" }, Result}) ->
+    {match, [Uid, User, Gid, Group]} = re:run(Result, ?REGEX, [{capture,[1,2,3,4],list}]),
+    lager:debug("Current User: ~s, Uid: ~s, Group: ~s, Gid: ~s", [User, Uid, Group, Gid]),
+    htoad:assert(Engine, [#user{ id = list_to_integer(Uid), name = User },
+                          #group{ id = list_to_integer(Gid), name = Group }]).
 
 superuser(Engine, #init{}, {operating_system_type, unix},
           {user, "root"}) ->
