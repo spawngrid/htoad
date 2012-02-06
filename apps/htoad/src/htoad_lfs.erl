@@ -6,7 +6,8 @@
 -include_lib("kernel/include/file.hrl").
 
 -rules([init, 
-        ensure_file_present, ensure_dir_present, ensure_path_access,
+        ensure_file_present, ensure_dir_present, 
+        ensure_user_access, ensure_group_access,
         fs_file_present, fs_dir_present]).
 
 init(Engine, #init{}) ->
@@ -46,16 +47,31 @@ ensure_dir_present(Engine, {ensure, present,
     end.
 
 
-ensure_path_access(Engine, {ensure, present, 
+ensure_user_access(Engine, {ensure, present, 
                              #file{
-                                    user = FileUser,
+                                    user = FileUser
+                                  } = File}, #user{}=User, #group{}) ->
+    case chown(File#file.path, FileUser, User) of
+        ok -> Engine;
+        {error, Reason} ->
+            htoad:assert(Engine, #error_report{ rule = {?MODULE, ensure_user_access}, 
+                                                fact = {ensure, present, File}, 
+                                                reason = {error, Reason} })
+    end.
+
+
+ensure_group_access(Engine, {ensure, present, 
+                             #file{
                                     group = FileGroup
-                                  } = File}, #user{}=User, 
-                                             #group{}=Group) ->
-    lager:debug("Ensured access ~s",[File#file.path]),
-    chown(File#file.path, FileUser, User),
-    chgrp(File#file.path, FileGroup, Group),
-    htoad:assert(Engine, File).
+                                  } = File}, #user{}, #group{}=Group) ->
+    case chgrp(File#file.path, FileGroup, Group) of
+        ok -> Engine;
+        {error, Reason} ->
+            htoad:assert(Engine, #error_report{ rule = {?MODULE, ensure_group_access}, 
+                                                fact = {ensure, present, File}, 
+                                                reason = {error, Reason} })
+    end.
+
 
 %% file system
 fs_file_present(Engine, {file_request, #file{
@@ -91,7 +107,9 @@ chown(_, #user{ id = Uid }, #user{ id = Uid }) ->
     ok;
 chown(Path, #user{ id = Uid }=_FileUser, #user{ id = _ }) ->
     lager:debug("Changed file ~s to uid ~w", [Path, Uid]),
-    file:change_owner(Path, Uid).
+    file:change_owner(Path, Uid);
+chown(_, _, #user{ id = _ }) ->
+    ok.
 
 chgrp(Path, FileGroup, Group) when is_list(FileGroup), is_record(Group, group) ->
     chgrp(Path, #group{ id = get_gid(FileGroup) }, Group);
@@ -101,7 +119,9 @@ chgrp(_, #group{ id = Gid }, #group{ id = Gid }) ->
     ok;
 chgrp(Path, #group{ id = Gid }=_FileGroup, #group{ id = _ }) ->
     lager:debug("Changed file ~s to gid ~w", [Path, Gid]),
-    file:change_group(Path, Gid).
+    file:change_group(Path, Gid);
+chgrp(_, _, #group{ id = _ }) ->
+    ok.
 
 get_uid(User) when is_list(User) ->
     Uid = string:strip(os:cmd("id -u " ++ User), right, $\n),
