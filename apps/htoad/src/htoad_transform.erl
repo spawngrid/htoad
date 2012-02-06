@@ -55,8 +55,12 @@ transform(Fun, State, Forms, Context) when is_list(Forms) ->
 
 do_transform(attribute,{attribute, _, export, Exports} = Attr, _Context, #state{} = State) ->
     {Attr, true, State#state{ exports = State#state.exports ++ Exports }};
-do_transform(attribute,{attribute, _, rules, Rules} = Attr, _Context, #state{} = State) ->
-    {Attr, false, State#state{ rules = Rules }};
+do_transform(attribute,{attribute, _, rule, Rule} = Attr, _Context, #state{ rules = Rs } = State) ->
+    {Attr, false, State#state{ rules = [rule_name(Rule)|Rs] }};
+
+do_transform(attribute,{attribute, _, rules, Rules0} = Attr, _Context, #state{ rules = Rs } = State) ->
+    Rules = [ rule_name(R) || R <- Rules0 ],
+    {Attr, false, State#state{ rules = Rules ++ Rs }};
 
 do_transform(attribute,{attribute, _, htoad_absname, AbsName} = Attr, _Context, #state{} = State) ->
     {Attr, false, State#state{ absname = AbsName }};
@@ -127,3 +131,8 @@ list_to_cons([],Line) ->
     {nil,Line};
 list_to_cons([H|T],Line) ->
     {cons, Line, H, list_to_cons(T, Line)}.
+
+rule_name(A) when is_atom(A) ->
+    A;
+rule_name({A, _}) ->
+    A.
