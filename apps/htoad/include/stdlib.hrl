@@ -38,7 +38,7 @@
 
 -record(error_report,
         {
-          rule,
-          fact,
-          reason
+          rule :: {module(), atom()},
+          fact :: tuple(),
+          reason :: term()
         }).
