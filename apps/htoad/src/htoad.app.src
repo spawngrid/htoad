@@ -29,7 +29,8 @@
            htoad_pkg_brew,
            htoad_pkg_apt,
            htoad_io,
-           htoad_shell
+           htoad_shell,
+           htoad_error
            ]}
          ]}
           
