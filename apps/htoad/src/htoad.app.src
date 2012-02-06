@@ -25,6 +25,7 @@
            htoad_lfs,
            htoad_deps,
            htoad_pkg,
+           htoad_pkg_yum,
            htoad_pkg_brew,
            htoad_pkg_apt,
            htoad_io,
