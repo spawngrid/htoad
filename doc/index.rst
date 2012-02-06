@@ -11,6 +11,8 @@ Hypnotoad is a heuristical provisioning & deployment tool.
 .. toctree::
    :maxdepth: 2
 
+   basic
+
 
 
 Indices and tables
