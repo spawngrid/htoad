@@ -35,7 +35,7 @@ command_run_as_superuser(Engine, #shell{ cmd = Cmd, run_as = superuser } = Shell
     htoad:assert(Engine, {output, Shell, Result}).
 
 
-command(Engine, #shell{ cmd = Cmd, run_as = undefined } = Shell) ->
+command(Engine, #shell{ cmd = Cmd, run_as = _ } = Shell) ->
     lager:debug("Executing shell command: ~s", [Cmd]),
     Result = string:strip(os:cmd(Cmd), right, $\n),
     lager:debug("Shell output for `~s`: ~s", [Cmd, Result]),
