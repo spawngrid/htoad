@@ -22,7 +22,7 @@ start_link(Args, Files) ->
 
 
 start_seresye() ->
-    seresye:start(?ENGINE).
+    htoad_engine:start(?ENGINE).
 
 %% ===================================================================
 %% Supervisor callbacks

@@ -15,7 +15,7 @@ start(App) ->
     end.
 
 add_rules(Rules) ->
-    seresye:add_rules(?ENGINE, Rules),
+    htoad_engine:add_rules(?ENGINE, Rules),
     case Rules of
         Module when is_atom(Module) ->
             ok;
@@ -26,13 +26,13 @@ add_rules(Rules) ->
     assert([{file_request, F} || F <- FReqs]).
 
 assert(Fact) when is_list(Fact); is_tuple(Fact) ->
-    seresye:assert(?ENGINE, Fact).
+    htoad_engine:assert(?ENGINE, Fact).
 
 assert(Engine, Fact) when is_list(Fact); is_tuple(Fact) ->
     seresye_engine:assert(Engine, Fact).
 
 retract(Fact) when is_list(Fact); is_tuple(Fact) ->
-    seresye:assert(?ENGINE, Fact).
+    htoad_engine:assert(?ENGINE, Fact).
 
 retract(Engine, Fact) when is_list(Fact); is_tuple(Fact) ->
     seresye_engine:retract(Engine, Fact).
