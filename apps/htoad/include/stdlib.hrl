@@ -35,3 +35,10 @@
           cmd,
           run_as :: undefined | superuser | term()
         }).
+
+-record(error_report,
+        {
+          rule,
+          fact,
+          reason
+        }).
