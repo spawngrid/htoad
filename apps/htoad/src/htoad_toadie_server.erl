@@ -96,7 +96,6 @@ handle_cast(apply, #state{ file = File, toadie = Toadie, applied = false } = Sta
 handle_cast(init, #state{ file = File } = State) ->
     try load_file(File) of
         {Toadie, Bin} ->
-            load_file(File),
             htoad:assert(#'htoad.toadie'{ filename = File, module = Toadie, server = self() }),
             lager:debug("Loaded toadie ~s", [File]),
             load_rules(File, Toadie, Bin),
