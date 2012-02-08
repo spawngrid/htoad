@@ -4,6 +4,8 @@
 -include_lib("htoad/include/htoad.hrl").
 -include_lib("htoad/include/stdlib.hrl").
 
+-include_lib("elixir/include/elixir.hrl").
+
 %% API
 -export([start_link/1]).
 
@@ -96,7 +98,6 @@ handle_cast(apply, #state{ file = File, toadie = Toadie, applied = false } = Sta
 handle_cast(init, #state{ file = File } = State) ->
     try load_file(File) of
         {Toadie, Bin} ->
-            load_file(File),
             htoad:assert(#'htoad.toadie'{ filename = File, module = Toadie, server = self() }),
             lager:debug("Loaded toadie ~s", [File]),
             load_rules(File, Toadie, Bin),
@@ -159,6 +160,19 @@ code_change(_OldVsn, State, _Extra) ->
 
 %% Private
 load_file(File) ->
+    case filename:extension(File) of
+        ".htd" ->
+            load_erl_file(File);
+        ".erl" ->
+            load_erl_file(File);
+        ".ex" ->
+            load_elixir_file(File);
+        ".exs" ->
+            load_elixir_file(File)
+    end.
+
+            
+load_erl_file(File) ->
     {ok, B} = file:read_file(File),
     S = binary_to_list(B),
     Module = list_to_atom(re:replace(File,"\\.","_",[{return, list}, global])),
@@ -179,6 +193,22 @@ load_file(File) ->
                                                             {i, filename:dirname(File)},
                                                             {i, code:lib_dir(htoad,include)},{i, htoad_utils:file(".")}]),
     code:load_binary(Module, htoad_utils:file(File ++ ".beam"), Binary),
+    {Module, Binary}.
+
+load_elixir_file(File) ->
+    ModuleName = lists:flatten(io_lib:format("Elixir_Toadie_~w",[erlang:phash2(now())])),
+    {ok, B} = file:read_file(File),
+    Src = "defmodule " ++ ModuleName ++ " do\n"
+          "import Erlang.htoad_utils\n"
+          "Module.add_attribute __MODULE__, :htoad_absname, '" ++ File ++ "'\n"
+          "@compile {:parse_transform, :htoad_transform}\n"
+          ++ binary_to_list(B) ++
+          "end\n",
+    Forms = elixir_translator:forms(Src, 1, File),
+    put(elixir_compiled, []),
+    elixir_compiler:eval_forms(Forms, 1, list_to_atom(ModuleName), #elixir_scope{ filename = File }),
+    [{Module, Binary}] = get(elixir_compiled),
+    erase(elixir_compiled),
     {Module, Binary}.
 
 load_rules(File, Toadie, Bin) ->

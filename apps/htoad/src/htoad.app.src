@@ -14,7 +14,8 @@
                   dynamic_compile,
                   erlydtl,
                   parse_trans,
-                  syntax_tools
+                  syntax_tools,
+                  elixir
                  ]},
   {mod, { htoad_app, []}},
   {env, [

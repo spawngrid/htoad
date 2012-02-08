@@ -79,20 +79,19 @@ do_transform(clause, {clause, Line, Head, G, B}, Context,
     {B1, Rec, State2} = transform(fun do_transform/4, State1, B, Context),
     {{clause, Line, Head1, G, B1}, Rec, State2};
 
+do_transform(application,{call, Line, {remote, RL, {atom, RL1, htoad_utils},{atom, RL2, F}}, [File]}, _Context,
+             #state{ absname = AbsName } = State) when F == load; F == file ->
+    {{call, Line, {remote, RL, {atom, RL1, htoad_utils}, {atom, RL2, F}}, 
+      [
+       filename_join(Line, File, AbsName)
+      ]}, true, State};
+
+
 do_transform(application,{call, Line, {atom, Line1, F}, [File]}, _Context,
                  #state{ absname = AbsName } = State) when F == load; F == file ->
     {{call, Line, {atom, Line1, F}, [
-                                        {call, Line, {remote, Line, 
-                                                   {atom, Line, filename},
-                                                   {atom, Line, join}},
-                                         [list_to_cons([
-                                                        {call, Line, {remote, Line,
-                                                                   {atom, Line, filename},
-                                                                   {atom, Line, dirname}},
-                                                         [{string, Line, AbsName}]},
-                                                        File
-                                                       ], Line)]}
-                                       ]}, true, State};
+                                     filename_join(Line, File, AbsName)
+                                    ]}, true, State};
 
 
 do_transform(_Type, Form, _Context, State) ->
@@ -110,6 +109,19 @@ clause_scanner(record_expr, {record, _L, file, Fields} = Form, _Context,
 clause_scanner(_Type, Form, _Context, State) ->
     {Form, false, State}.
 
+
+filename_join(Line, File, AbsName) ->
+    {call, Line, {remote, Line, 
+                  {atom, Line, filename},
+                  {atom, Line, join}},
+     [list_to_cons([
+                    {call, Line, {remote, Line,
+                                  {atom, Line, filename},
+                                  {atom, Line, dirname}},
+                     [{string, Line, AbsName}]},
+                    File
+                   ], Line)]}.
+        
 
 scan_file_record(Fields) ->
     DefaultFile = #file{},
