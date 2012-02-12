@@ -6,7 +6,8 @@
 -include_lib("kernel/include/file.hrl").
 
 -rules([init, 
-        ensure_file_present, ensure_dir_present, 
+        ensure_file_present, ensure_file_absent,
+        ensure_dir_present, ensure_dir_absent,
         ensure_user_access, ensure_group_access,
         fs_file_present, fs_dir_present]).
 
@@ -28,6 +29,58 @@ ensure_file_present(Engine, {ensure, present,
             htoad:assert(Engine, #error_report{ rule = {?MODULE, ensure_file_present}, 
                                                 fact = {ensure, present, File}, 
                                                 reason = {error, Reason} })
+    end.
+
+ensure_file_absent(Engine, {ensure, absent,
+                            #file{
+                                   type = file
+                                 } = File}) ->
+    case filelib:is_dir(File#file.path) of
+        true ->
+            htoad:assert(Engine, #error_report{ rule = {?MODULE, ensure_file_absent},
+                                                fact = {ensure, absent, File},
+                                                reason = {error, is_dir}
+                                                });
+        false ->
+            case file:delete(File#file.path) of
+                ok ->
+                    lager:debug("Deleted file ~s",[File#file.path]),
+                    htoad:retract(Engine, File);
+                {error, enoent} ->
+                    lager:debug("File ~s is absent, no deletion necessary", [File#file.path]),
+                    Engine;
+                {error, Reason} ->
+                    htoad:assert(Engine, #error_report{ rule = {?MODULE, ensure_file_absent},
+                                                        fact = {ensure, absent, File},
+                                                        reason = {error, Reason}
+                                                      })
+            end
+    end.
+
+ensure_dir_absent(Engine, {ensure, absent,
+                            #file{
+                                   type = dir
+                                 } = File}) ->
+    case filelib:is_regular(File#file.path) of
+        true ->
+            htoad:assert(Engine, #error_report{ rule = {?MODULE, ensure_dir_absent},
+                                                fact = {ensure, absent, File},
+                                                reason = {error, is_regular}
+                                                });
+        false ->
+            case del_dir(File#file.path) of
+                ok ->
+                    lager:debug("Deleted directory ~s",[File#file.path]),
+                    htoad:retract(Engine, File);
+                {error, enoent} ->
+                    lager:debug("Directory ~s is absent, no deletion necessary", [File#file.path]),
+                    Engine;
+                {error, Reason} ->
+                    htoad:assert(Engine, #error_report{ rule = {?MODULE, ensure_dir_absent},
+                                                        fact = {ensure, absent, File},
+                                                        reason = {error, Reason}
+                                                      })
+            end
     end.
 
 
@@ -159,4 +212,19 @@ load_content(#file{ content = Content } = File) when is_list(Content);
             []
     end.
 
-
+del_dir(Path) ->
+    case file:list_dir(Path) of
+        {ok, Fs} ->
+            [ begin
+                  File = filename:join([Path, F]),
+                  case filelib:is_regular(File) of
+                      true ->
+                          file:delete(File);
+                      false ->
+                          del_dir(File)
+                  end
+              end || F <- Fs ],
+            file:del_dir(Path);
+        Error ->
+            Error
+    end.
