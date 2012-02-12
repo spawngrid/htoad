@@ -3,10 +3,9 @@
 -include_lib("esupervisor/include/esupervisor.hrl").
 
 -include_lib("htoad/include/htoad.hrl").
--include_lib("htoad/include/stdlib.hrl").
 
 %% API
--export([start_link/2, start_seresye/0]).
+-export([start_link/1, start_seresye/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -15,11 +14,8 @@
 %% API functions
 %% ===================================================================
 
-start_link(Args, Files) ->
-    Result = esupervisor:start_link({local, ?MODULE}, ?MODULE, [Args, Files]),
-    init_engine(Args),
-    Result.
-
+start_link(Args) ->
+    esupervisor:start_link({local, ?MODULE}, ?MODULE, [Args]).
 
 start_seresye() ->
     htoad_engine:start(?ENGINE).
@@ -29,7 +25,7 @@ start_seresye() ->
 %% ===================================================================
 
 
-init([_Args, Files]) ->
+init([_Args]) ->
     #one_for_one{
       children = [
                   #worker{
@@ -39,25 +35,7 @@ init([_Args, Files]) ->
                     },
                   #one_for_one {
                            id = htoad_toadies,
-                           registered = htoad_toadies,
-                           children =
-                               [ 
-                                 #worker {
-                                    id = File,
-                                    modules = dynamic,
-                                    restart = transient,
-                                    start_func = {htoad_toadie_server, start_link, [File]}
-                                   } || File <- Files ]
+                           registered = htoad_toadies
                           }
                  ]
      }.
-
-
-%% private
-
-init_engine(Args) ->
-    {ok, Modules} = application:get_env(htoad, modules),
-    [ ok = htoad:add_rules(Module) || Module <- Modules ],
-    htoad:assert([{htoad_argument, Arg} || Arg <- Args ]),
-    Signals = [ {htoad_toadie_server_ready, Pid} || {_, Pid, _, _} <- supervisor:which_children(htoad_toadies) ],
-    htoad:assert(htoad_utils:on(Signals, #init{})).
