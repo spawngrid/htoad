@@ -1,3 +1,5 @@
+.kerl
+erlang
 deps
 log
 apps/htoad/ebin
