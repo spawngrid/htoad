@@ -30,7 +30,8 @@
            htoad_pkg_apt,
            htoad_io,
            htoad_shell,
-           htoad_error
+           htoad_error,
+           htoad_users
            ]}
          ]}
           
