@@ -17,14 +17,23 @@
 %%
 -record(user, 
         {
-          id,
-          name
+          name,
+          password,
+          uid,
+          gid,
+          quota,
+          comment,
+          gecos,
+          home,
+          shell
         }).
 
 -record(group, 
         {
-          id,
-          name
+          name,
+          password,
+          gid,
+          users
         }).
 
 -record(file,

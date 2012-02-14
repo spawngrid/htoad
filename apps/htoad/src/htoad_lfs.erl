@@ -8,7 +8,8 @@
 -rules([init, 
         ensure_file_present, ensure_file_absent,
         ensure_dir_present, ensure_dir_absent,
-        ensure_user_access, ensure_group_access,
+        ensure_user_access_by_name, ensure_user_access_by_uid,
+        ensure_group_access_by_name, ensure_group_access_by_gid,
         fs_file_present, fs_dir_present]).
 
 init(Engine, #init{}) ->
@@ -100,10 +101,20 @@ ensure_dir_present(Engine, {ensure, present,
     end.
 
 
-ensure_user_access(Engine, {ensure, present, 
-                             #file{
-                                    user = FileUser
-                                  } = File}, #user{}=User, #group{}) ->
+ensure_user_access_by_name(Engine, {ensure, present, 
+                                    #file{
+                                           user = FileUser
+                                         } = File}, {current_user, #user{ uid = Uid }}, #user{ uid = Uid } = User, #user{ name = FileUser } = FU) ->
+    ensure_user_access(Engine, File, FU, User).
+
+ensure_user_access_by_uid(Engine, {ensure, present, 
+                                   #file{
+                                          user = FileUser
+                                        } = File}, {current_user, #user{ uid = Uid }}, #user{ uid = Uid } = User, #user{ uid = FileUser } = FU) ->
+    ensure_user_access(Engine, File, FU, User).
+
+
+ensure_user_access(Engine, File, FileUser, User) ->
     case chown(File#file.path, FileUser, User) of
         ok -> Engine;
         {error, Reason} ->
@@ -113,10 +124,20 @@ ensure_user_access(Engine, {ensure, present,
     end.
 
 
-ensure_group_access(Engine, {ensure, present, 
-                             #file{
-                                    group = FileGroup
-                                  } = File}, #user{}, #group{}=Group) ->
+ensure_group_access_by_name(Engine, {ensure, present, 
+                                     #file{
+                                            group = FileGroup
+                                          } = File}, {current_user, #user{ gid = Gid }}, #group{ gid = Gid } = Group, #group{ name = FileGroup } = FG) ->
+    ensure_group_access(Engine, File, FG, Group).
+
+ensure_group_access_by_gid(Engine, {ensure, present, 
+                                    #file{
+                                           group = FileGroup
+                                         } = File}, {current_user, #user{ gid = Gid }}, #group{ gid = Gid } = Group, #group{ gid = FileGroup } = FG) ->
+    ensure_group_access(Engine, File, FG, Group).
+
+
+ensure_group_access(Engine, File, FileGroup, Group) ->
     case chgrp(File#file.path, FileGroup, Group) of
         ok -> Engine;
         {error, Reason} ->
@@ -152,37 +173,21 @@ fs_dir_present(Engine, {file_request, #file{
 
 %% private
 
-chown(Path, FileUser, User) when is_list(FileUser), is_record(User, user) ->
-    chown(Path, #user{ id = get_uid(FileUser) }, User);
-chown(Path, FileUser, User) when is_integer(FileUser), is_record(User, user) ->
-    chown(Path, #user{ id = FileUser }, User);
-chown(_, #user{ id = Uid }, #user{ id = Uid }) ->
+chown(_, #user{ uid = Uid }, #user{ uid = Uid }) ->
     ok;
-chown(Path, #user{ id = Uid }=_FileUser, #user{ id = _ }) ->
+chown(Path, #user{ uid = Uid }=_FileUser, #user{ uid = _ }) ->
     lager:debug("Changed file ~s to uid ~w", [Path, Uid]),
     file:change_owner(Path, Uid);
-chown(_, _, #user{ id = _ }) ->
+chown(_, _, #user{ uid = _ }) ->
     ok.
 
-chgrp(Path, FileGroup, Group) when is_list(FileGroup), is_record(Group, group) ->
-    chgrp(Path, #group{ id = get_gid(FileGroup) }, Group);
-chgrp(Path, FileGroup, Group) when is_integer(FileGroup), is_record(Group, group) ->
-    chgrp(Path, #group{ id = FileGroup }, Group);
-chgrp(_, #group{ id = Gid }, #group{ id = Gid }) ->
+chgrp(_, #group{ gid = Gid }, #group{ gid = Gid }) ->
     ok;
-chgrp(Path, #group{ id = Gid }=_FileGroup, #group{ id = _ }) ->
+chgrp(Path, #group{ gid = Gid }=_FileGroup, #group{ gid = _ }) ->
     lager:debug("Changed file ~s to gid ~w", [Path, Gid]),
     file:change_group(Path, Gid);
-chgrp(_, _, #group{ id = _ }) ->
+chgrp(_, _, #group{ gid = _ }) ->
     ok.
-
-get_uid(User) when is_list(User) ->
-    Uid = string:strip(os:cmd("id -u " ++ User), right, $\n),
-    list_to_integer(Uid).
-
-get_gid(Group) when is_list(Group) ->
-    Gid = string:strip(os:cmd("id -g " ++ Group), right, $\n),
-    list_to_integer(Gid).
 
 chmod(Path, Mode) ->
     case Mode of
@@ -195,7 +200,7 @@ chmod(Path, Mode) ->
 
 load_mode(#file{} = File) ->
     {ok, #file_info{ mode = Mode, gid = Gid, uid = Uid }} = file:read_file_info(File#file.path),
-    File#file{ mode = Mode, user = #user{ id = Uid }, group = #group{ id = Gid } }.
+    File#file{ mode = Mode, user = #user{ uid = Uid }, group = #group{ gid = Gid } }.
         
 load_content(#file{ content = dontread } = File) ->
     File;

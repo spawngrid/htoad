@@ -15,11 +15,10 @@ init(Engine, #init{}, {operating_system_type, unix}) ->
 user(Engine, {output, #shell{ cmd = "id" }, Result}) ->
     {match, [Uid, User, Gid, Group]} = re:run(Result, ?REGEX, [{capture,[1,2,3,4],list}]),
     lager:debug("Current user: ~s, uid: ~s, group: ~s, gid: ~s", [User, Uid, Group, Gid]),
-    htoad:assert(Engine, [#user{ id = list_to_integer(Uid), name = User },
-                          #group{ id = list_to_integer(Gid), name = Group }]).
+    htoad:assert(Engine, {current_user, #user{ uid = list_to_integer(Uid), gid = list_to_integer(Gid), name = User }}).
 
 superuser(Engine, #init{}, {operating_system_type, unix},
-          #user{ name = "root" }) ->
+          {current_user, #user{ name = "root" }}) ->
     htoad:assert(Engine, {?MODULE, superuser}).
 
 command_run_in_superuser(Engine, #shell{ run_as = superuser } = Shell,
