@@ -12,10 +12,15 @@ init(Engine, #init{}, {operating_system_type, unix}) ->
     lager:debug("Initialized htoad_shell"),
     htoad:assert(Engine, #shell{ cmd = "id" }).
 
-user(Engine, {output, #shell{ cmd = "id" }, Result}) ->
+user(Engine, {output, #shell{ cmd = "id" }, Result}, #user{ uid = Uid0 } = User0) ->
     {match, [Uid, User, Gid, Group]} = re:run(Result, ?REGEX, [{capture,[1,2,3,4],list}]),
-    lager:debug("Current user: ~s, uid: ~s, group: ~s, gid: ~s", [User, Uid, Group, Gid]),
-    htoad:assert(Engine, {current_user, #user{ uid = list_to_integer(Uid), gid = list_to_integer(Gid), name = User }}).
+    case list_to_integer(Uid) of
+        Uid0 ->
+            lager:debug("Current user: ~s, uid: ~s, group: ~s, gid: ~s", [User, Uid, Group, Gid]),
+            htoad:assert(Engine, {current_user, User0});
+        _ ->
+            Engine
+    end.
 
 superuser(Engine, #init{}, {operating_system_type, unix},
           {current_user, #user{ name = "root" }}) ->
