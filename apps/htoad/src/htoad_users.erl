@@ -5,14 +5,13 @@
 
 -include_lib("kernel/include/file.hrl").
 
--rules([init, etc_passwd, etc_group,
-        osx, osx_users, osx_groups]).
+-rules([init, etc_passwd, etc_group]).
 
 init(Engine, #init{}) ->
     lager:debug("Initialized htoad_users"),
     Engine.
 
-etc_passwd(Engine, #file{ path = "/etc/passwd", content = Content }, {operating_system_type, unix}) 
+etc_passwd(Engine, #file{ path = "/etc/passwd", content = Content }, {operating_system_type, unix})
   when not {rule, [{operating_system_name, darwin}]} ->
     lager:debug("Using /etc/passwd to fetch accounts"),
     Lines = re:split(Content,"\n",[{return, list}]),
