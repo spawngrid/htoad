@@ -103,14 +103,30 @@ ensure_dir_present(Engine, {ensure, present,
 
 ensure_user_access_by_name(Engine, {ensure, present, 
                                     #file{
-                                           user = FileUser
-                                         } = File}, {current_user, #user{ uid = Uid }}, #user{ uid = Uid } = User, #user{ name = FileUser } = FU) ->
+                                           path = Path,
+                                           type = Type,
+                                           user = FileUserName
+                                         } = File},
+                           {current_user, User}, 
+                           #file{
+                                  path = Path,
+                                  type = Type
+                                },
+                           #user{ name = FileUserName } = FU) ->
     ensure_user_access(Engine, File, FU, User).
 
 ensure_user_access_by_uid(Engine, {ensure, present, 
                                    #file{
-                                          user = FileUser
-                                        } = File}, {current_user, #user{ uid = Uid }}, #user{ uid = Uid } = User, #user{ uid = FileUser } = FU) ->
+                                          path = Path,
+                                          type = Type,
+                                          user = FileUserId
+                                        } = File}, 
+                          {current_user, User},
+                          #file{
+                                  path = Path,
+                                  type = Type
+                                },
+                          #user{ uid = FileUserId } = FU) ->
     ensure_user_access(Engine, File, FU, User).
 
 
@@ -126,14 +142,32 @@ ensure_user_access(Engine, File, FileUser, User) ->
 
 ensure_group_access_by_name(Engine, {ensure, present, 
                                      #file{
+                                            path = Path,
+                                            type = Type,
                                             group = FileGroup
-                                          } = File}, {current_user, #user{ gid = Gid }}, #group{ gid = Gid } = Group, #group{ name = FileGroup } = FG) ->
+                                          } = File}, 
+                            {current_user, #user{ gid = Gid }}, 
+                            #file{
+                                   path = Path,
+                                   type = Type
+                                 },
+                            #group{ gid = Gid } = Group, 
+                            #group{ name = FileGroup } = FG) ->
     ensure_group_access(Engine, File, FG, Group).
 
 ensure_group_access_by_gid(Engine, {ensure, present, 
                                     #file{
+                                          path = Path,
+                                          type = Type,
                                            group = FileGroup
-                                         } = File}, {current_user, #user{ gid = Gid }}, #group{ gid = Gid } = Group, #group{ gid = FileGroup } = FG) ->
+                                         } = File}, 
+                           {current_user, #user{ gid = Gid }}, 
+                           #file{
+                             path = Path,
+                             type = Type
+                            },
+                           #group{ gid = Gid } = Group, 
+                           #group{ gid = FileGroup } = FG) ->
     ensure_group_access(Engine, File, FG, Group).
 
 
