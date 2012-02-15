@@ -3,7 +3,7 @@ KERL_CONFIG_OPTS=""
 
 ifeq ($(shell which erl),)
 	ERL=erlang/bin/erl
-	REBAR=". $(HERE)/erlang/activate && ./rebar"
+	REBAR=". $(HERE)/erlang/activate && $(HERE)/rebar"
 else
 	ERL=$(shell which erl)
 	REBAR="./rebar"
