@@ -29,6 +29,8 @@ assert(Fact) when is_list(Fact); is_tuple(Fact) ->
     htoad_engine:assert(?ENGINE, Fact).
 
 assert(Engine, Fact) when is_list(Fact); is_tuple(Fact) ->
+    {Fun, Args} = seresye_engine:get_fired_rule(Engine),
+    htoad_trace:assert(Engine, Fun, Args, Fact),
     seresye_engine:assert(Engine, Fact).
 
 retract(Fact) when is_list(Fact); is_tuple(Fact) ->

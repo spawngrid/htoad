@@ -18,7 +18,10 @@ start_link(Args) ->
     esupervisor:start_link({local, ?MODULE}, ?MODULE, [Args]).
 
 start_seresye() ->
-    htoad_engine:start(?ENGINE).
+    {ok, Pid} = htoad_engine:start(?ENGINE),
+    htoad_engine:set_hooks(?ENGINE,[{before_rule, fun htoad_trace:rule/3}]),
+    {ok, Pid}.
+       
 
 %% ===================================================================
 %% Supervisor callbacks
