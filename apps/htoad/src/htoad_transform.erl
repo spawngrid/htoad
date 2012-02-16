@@ -6,7 +6,7 @@
 -record(state,{ 
           rules = [],
           rule_functions = [],
-          current_function = [], %% [] :: atom()
+          current_rule = [], %% [] :: atom()
           file_requests = [],
           exports = [],
           options,
@@ -68,13 +68,13 @@ do_transform(attribute,{attribute, _, htoad_absname, AbsName} = Attr, _Context, 
 do_transform(function, {function, _, Fun, Arity, _Cs} = Form, _Context, #state{ rules = Rules, rule_functions = RFuns } = State) ->
     case lists:member(Fun, Rules) of
         false ->
-            {Form, true, State#state{ current_function = [] }};
+            {Form, true, State#state{ current_rule = [] }};
         true ->
-            {Form, true, State#state{ current_function = Fun, rule_functions = [{Fun, Arity}|RFuns] -- State#state.exports }}
+            {Form, true, State#state{ current_rule = Fun, rule_functions = [{Fun, Arity}|RFuns] -- State#state.exports }}
     end;
 
 do_transform(clause, {clause, Line, Head, G, B}, Context,
-             #state{ current_function = CurFun} = State) when CurFun /= [] ->
+             #state{ current_rule = CurFun} = State) when CurFun /= [] ->
     {Head1, _Rec, State1} = transform(fun clause_scanner/4, State, Head, Context),
     {B1, Rec, State2} = transform(fun do_transform/4, State1, B, Context),
     {{clause, Line, Head1, G, B1}, Rec, State2};
