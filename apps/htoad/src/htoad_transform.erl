@@ -76,7 +76,7 @@ do_transform(function, {function, _, Fun, Arity, _Cs} = Form, _Context, #state{ 
 do_transform(clause, {clause, Line, Head, G, B}, Context,
              #state{ current_rule = CurFun} = State) when CurFun /= [] ->
     {Head1, _Rec, State1} = transform(fun clause_scanner/4, State, Head, Context),
-    {B1, Rec, State2} = transform(fun do_transform/4, State1, B, Context),
+    {B1, Rec, State2} = transform(fun do_transform/4, State1#state{ current_rule = [] }, B, Context),
     {{clause, Line, Head1, G, B1}, Rec, State2};
 
 do_transform(application,{call, Line, {atom, Line1, F}, [File]}, _Context,
