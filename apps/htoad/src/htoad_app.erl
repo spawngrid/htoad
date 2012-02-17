@@ -20,7 +20,6 @@ start(_StartType, _StartArgs) ->
             init:stop(),
             {ok, self()};
         _ ->
-            ets:new(htoad_trace, [named_table, public, bag]),
             process_args(Args),
             Result = htoad_sup:start_link(Args),
             [ htoad:assert({load, File}) || File <- Files ],

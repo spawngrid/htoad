@@ -18,6 +18,7 @@
                  ]},
   {mod, { htoad_app, []}},
   {env, [
+         {trace, [{htoad_trace_ets, []}]},
          {modules,
           [htoad_host,
            htoad_htoad,
