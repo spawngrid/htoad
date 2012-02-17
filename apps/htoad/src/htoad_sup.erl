@@ -50,7 +50,7 @@ init([_Args]) ->
                   #worker{
                      id = ?ENGINE,
                      restart = permanent,
-                     start_func = {htoad_sup, start_seresye, []}
+                     start_func = {?MODULE, start_seresye, []}
                     },
                   #one_for_one {
                            id = htoad_toadies,
