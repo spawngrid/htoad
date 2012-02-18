@@ -52,6 +52,18 @@ init([_Args]) ->
                      restart = permanent,
                      start_func = {?MODULE, start_seresye, []}
                     },
+                  #simple_one_for_one {
+                           id = htoad_shell,
+                           registered = htoad_shell,
+                           children = [
+                                       #worker{
+                                          id = htoad_shell_server,
+                                          restart = transient,
+                                          start_func = {htoad_shell_server, start_link, []},
+                                          modules = [htoad_shell_server]
+                                         }
+                                      ]
+                          },
                   #one_for_one {
                            id = htoad_toadies,
                            registered = htoad_toadies
