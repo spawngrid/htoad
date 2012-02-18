@@ -55,7 +55,8 @@
 -record(shell,
         {
           cmd,
-          run_as :: undefined | superuser | term()
+          run_as :: undefined | superuser | term(),
+          strip_newline = true :: boolean()
         }).
 
 -record(error_report,
