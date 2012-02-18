@@ -25,6 +25,12 @@ start(_StartType, _StartArgs) ->
             [ htoad:assert({load, File}) || File <- Files ],
             init_engine(Args),
             htoad:assert({htoad_command, apply}),
+            case proplists:get_value(shell, Args) of
+                true ->
+                    shell:start();
+                _ ->
+                    skip
+            end,
             Result
     end.
 
@@ -62,5 +68,6 @@ process_args([_|T]) ->
 optspec() ->
     [
      {host, undefined, "host", string, "Override host name"},
-     {log, $l, "log", {string, "error"}, "Log output level (debug, info, error)"}
+     {log, $l, "log", {string, "error"}, "Log output level (debug, info, error)"},
+     {shell, undefined, "shell", {boolean, false}, "Enabled Erlang shell"}
     ].
