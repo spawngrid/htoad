@@ -195,7 +195,11 @@ useradd_options(#user{} = User) ->
     re:replace(string:join([
     case User#user.home of undefined -> []; Home -> "--home " ++ Home end,
     case User#user.shell of undefined -> []; Shell -> "--shell " ++ Shell end,
-    case User#user.gid of undefined -> []; Gid -> "--gid " ++ integer_to_list(Gid) end,
+    case User#user.gid of 
+        undefined -> []; 
+        Gid when is_integer(Gid) -> "--gid " ++ integer_to_list(Gid);
+        Gid when is_list(Gid) -> "--gid " ++ Gid 
+    end,
     case User#user.uid of undefined -> []; Uid -> "--uid " ++ integer_to_list(Uid) end,
     case User#user.password of undefined -> []; Password -> 
             lager:warning("Use of --password option for useradd is not recommended"), 
