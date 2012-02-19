@@ -20,7 +20,9 @@
   {env, [
          {trace, [{htoad_trace_ets, []}]},
          {modules,
-          [htoad_host,
+          [
+           htoad_base,
+           htoad_host,
            htoad_htoad,
            htoad_toadies,
            htoad_lfs,
