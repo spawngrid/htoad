@@ -5,7 +5,7 @@
 
 -include_lib("kernel/include/file.hrl").
 
--rules([init, etc_passwd, etc_group]).
+-rules([init, etc_passwd, etc_group, ensure_user_present, ensure_user_absent]).
 
 init(Engine, #init{}) ->
     lager:debug("Initialized htoad_users"),
@@ -23,7 +23,111 @@ etc_group(Engine, #file{ path = "/etc/group", content = Content }, {operating_sy
     Lines = re:split(Content,"\n",[{return, list}]),
     parse_lines(Engine, Lines).
 
+ensure_user_absent(Engine,
+                    #file{ path = "/usr/sbin/userdel", content = dontread },
+                    {ensure, absent, #user{ name = Name } = User}, 
+                    {operating_system_name, linux}) ->
+    Command = #shell{ cmd = "/usr/sbin/userdel " ++ Name },
+    Retractions = [ Rule || {file_request, #file{ path = "/etc/passwd" }} = Rule <- seresye_engine:get_kb(Engine) ],
+    REngine = htoad:retract(Engine, Retractions),
+    htoad:assert(REngine, [Command,
+                          htoad_utils:on({exit_status, Command, 0},
+                                         {file_request, #file{ path = "/etc/passwd" }}),
+                          htoad_utils:on({exit_status, Command, 1},
+                                         #error_report{ fact = {ensure, absent, User},
+                                                        rule = {?MODULE, ensure_user_absent},
+                                                        reason = "Can't update password file"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 2},
+                                         #error_report{ fact = {ensure, absent, User},
+                                                        rule = {?MODULE, ensure_user_absent},
+                                                        reason = "Invalid command syntax"
+                                                      }),
+                          %% we skip 6 since it is "Specified user doesn't exist", which is what we want
+                          htoad_utils:on({exit_status, Command, 8},
+                                         #error_report{ fact = {ensure, absent, User},
+                                                        rule = {?MODULE, ensure_user_absent},
+                                                        reason = "User currently logged in"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 10},
+                                         #error_report{ fact = {ensure, absent, User},
+                                                        rule = {?MODULE, ensure_user_absent},
+                                                        reason = "Can't update group file"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 12},
+                                         #error_report{ fact = {ensure, absent, User},
+                                                        rule = {?MODULE, ensure_user_absent},
+                                                        reason = "Can't remove home directory"
+                                                      })
+                           ]).
+
+ensure_user_present(Engine, 
+                    #file{ path = "/usr/sbin/useradd", content = dontread },
+                    {ensure, present, #user{ name = Name } = User}, 
+                    {operating_system_name, linux}) ->
+    lager:debug("Creating user ~s",[Name]),
+    Options = useradd_options(User),
+    Command = #shell{ cmd = "/usr/sbin/useradd " ++ Options ++ " " ++ Name },
+    Retractions = [ Rule || {file_request, #file{ path = "/etc/passwd" }} = Rule <- seresye_engine:get_kb(Engine) ],
+    REngine = htoad:retract(Engine, Retractions),
+    htoad:assert(REngine, [Command,
+                          htoad_utils:on({exit_status, Command, 0},
+                                         {file_request, #file{ path = "/etc/passwd" }}),
+                          htoad_utils:on({exit_status, Command, 1},
+                                         #error_report{ fact = {ensure, present, User},
+                                                        rule = {?MODULE, ensure_user_present},
+                                                        reason = "Can't update password file"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 2},
+                                         #error_report{ fact = {ensure, present, User},
+                                                        rule = {?MODULE, ensure_user_present},
+                                                        reason = "Invalid command syntax"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 3},
+                                         #error_report{ fact = {ensure, present, User},
+                                                        rule = {?MODULE, ensure_user_present},
+                                                        reason = "Invalid command option"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 4},
+                                         #error_report{ fact = {ensure, present, User},
+                                                        rule = {?MODULE, ensure_user_present},
+                                                        reason = "UID already in use"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 6},
+                                         #error_report{ fact = {ensure, present, User},
+                                                        rule = {?MODULE, ensure_user_present},
+                                                        reason = "Specified group does not exist"
+                                                      }),
+                          %% skip 9 because it is 'username already in use', which is fine
+                          htoad_utils:on({exit_status, Command, 10},
+                                         #error_report{ fact = {ensure, present, User},
+                                                        rule = {?MODULE, ensure_user_present},
+                                                        reason = "Can't update group file"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 12},
+                                         #error_report{ fact = {ensure, present, User},
+                                                        rule = {?MODULE, ensure_user_present},
+                                                        reason = "Can't create home directory"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 13},
+                                         #error_report{ fact = {ensure, present, User},
+                                                        rule = {?MODULE, ensure_user_present},
+                                                        reason = "Can't create mail spool"
+                                                      })
+
+                          ]).
+
 %% private
+
+useradd_options(#user{} = User) ->
+    re:replace(string:join([
+    case User#user.home of undefined -> []; Home -> "--home " ++ Home end,
+    case User#user.shell of undefined -> []; Shell -> "--shell " ++ Shell end,
+    case User#user.gid of undefined -> []; Gid -> "--gid " ++ integer_to_list(Gid) end,
+    case User#user.uid of undefined -> []; Uid -> "--uid " ++ integer_to_list(Uid) end,
+    case User#user.password of undefined -> []; Password -> lager:warning("Use of --pasword option for useradd is not recommended"), "--password " ++ Password end,
+    case User#user.comment of undefined -> []; Comment -> "--comment '" ++ Comment ++ "'" end
+                ], " "),"\s+"," ",[{return,list},global]).
 
 parse_lines(Engine, Lines) ->
     lists:foldl(fun(Line, NewEngine) ->
