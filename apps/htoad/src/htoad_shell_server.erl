@@ -75,6 +75,7 @@ init(Shell) ->
 handle_call(start, From, #state{ shell = #shell{ cmd = Cmd } } = State) ->
     Port = open_port({spawn_executable, "/bin/sh"},
                      [{args, ["-c", Cmd]},
+                      stderr_to_stdout,
                       exit_status,
                       hide %% Windows only
                      ]),
