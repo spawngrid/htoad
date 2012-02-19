@@ -36,7 +36,7 @@ command_run_as_superuser(Engine, #shell{ cmd = Cmd, run_as = superuser } = Shell
     lager:debug("Executing shell command as a super user (via sudo): ~s", [Cmd]),
     {Code, Output} = htoad_shell_server:start(Shell#shell{ cmd = "/usr/bin/sudo -n " ++ Cmd }),
     Result = adjust_output(Output, Shell),
-    lager:debug("Shell output for `~s` (sudo): ~s", [Cmd,Result]),
+    lager:debug("Shell output for `~s` (sudo) (exit code ~w): ~s", [Cmd,Code,Result]),
     htoad:assert(Engine, [{exit_status, Shell, Code}, {output, Shell, Result}]).
 
 
@@ -44,7 +44,7 @@ command(Engine, #shell{ cmd = Cmd, run_as = _ } = Shell) ->
     lager:debug("Executing shell command: ~s", [Cmd]),
     {Code, Output} = htoad_shell_server:start(Shell),
     Result = adjust_output(Output, Shell),
-    lager:debug("Shell output for `~s`: ~s", [Cmd, Result]),
+    lager:debug("Shell output for `~s` (exit code ~w): ~s", [Cmd,Code,Result]),
     htoad:assert(Engine, [{exit_status, Shell, Code}, {output, Shell, Result}]).
 
 
