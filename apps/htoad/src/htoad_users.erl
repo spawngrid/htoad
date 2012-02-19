@@ -5,7 +5,9 @@
 
 -include_lib("kernel/include/file.hrl").
 
--rules([init, etc_passwd, etc_group, ensure_user_present, ensure_user_absent]).
+-rules([init, etc_passwd, etc_group, 
+        ensure_user_present, ensure_user_absent,
+        ensure_group_present, ensure_group_absent]).
 
 init(Engine, #init{}) ->
     lager:debug("Initialized htoad_users"),
@@ -120,6 +122,73 @@ ensure_user_present(Engine,
 
                           ]).
 
+ensure_group_absent(Engine,
+                    #file{ path = "/usr/sbin/groupdel", content = dontread },
+                    {ensure, absent, #group{ name = Name } = Group}, 
+                    {operating_system_name, linux}) ->
+    lager:debug("Deleting group ~s",[Name]),
+    Command = #shell{ cmd = "/usr/sbin/groupdel " ++ Name },
+    Retractions = [ Rule || {file_request, #file{ path = "/etc/group" }} = Rule <- seresye_engine:get_kb(Engine) ],
+    GroupRetractions = [ Rule || #group{ name = GroupName } = Rule <- seresye_engine:get_kb(Engine), GroupName == Name ],
+    REngine = htoad:retract(Engine, Retractions),
+    htoad:assert(REngine, [Command,
+                          htoad_utils:on({exit_status, Command, 0},
+                                         [{retract, GroupRetractions},
+                                          {file_request, #file{ path = "/etc/group" }}]),
+                          htoad_utils:on({exit_status, Command, 2},
+                                         #error_report{ fact = {ensure, absent, Group},
+                                                        rule = {?MODULE, ensure_group_absent},
+                                                        reason = "Invalid command syntax"
+                                                      }),
+                          %% we skip 6 since it is "Specified group doesn't exist", which is what we want
+                          htoad_utils:on({exit_status, Command, 8},
+                                         #error_report{ fact = {ensure, absent, Group},
+                                                        rule = {?MODULE, ensure_group_absent},
+                                                        reason = "Can't remove user's primary group"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 10},
+                                         #error_report{ fact = {ensure, absent, Group},
+                                                        rule = {?MODULE, ensure_group_absent},
+                                                        reason = "Can't update group file"
+                                                      })
+                           ]).
+
+
+ensure_group_present(Engine, 
+                    #file{ path = "/usr/sbin/groupadd", content = dontread },
+                    {ensure, present, #group{ name = Name } = Group}, 
+                    {operating_system_name, linux}) ->
+    lager:debug("Creating group ~s",[Name]),
+    Options = groupadd_options(Group),
+    Command = #shell{ cmd = "/usr/sbin/groupadd " ++ Options ++ " " ++ Name },
+    Retractions = [ Rule || {file_request, #file{ path = "/etc/group" }} = Rule <- seresye_engine:get_kb(Engine) ],
+    REngine = htoad:retract(Engine, Retractions),
+    htoad:assert(REngine, [Command,
+                          htoad_utils:on({exit_status, Command, 0},
+                                         {file_request, #file{ path = "/etc/group" }}),
+                          htoad_utils:on({exit_status, Command, 2},
+                                         #error_report{ fact = {ensure, present, Group},
+                                                        rule = {?MODULE, ensure_group_present},
+                                                        reason = "Invalid command syntax"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 3},
+                                         #error_report{ fact = {ensure, present, Group},
+                                                        rule = {?MODULE, ensure_group_present},
+                                                        reason = "Invalid command option"
+                                                      }),
+                          htoad_utils:on({exit_status, Command, 4},
+                                         #error_report{ fact = {ensure, present, Group},
+                                                        rule = {?MODULE, ensure_group_present},
+                                                        reason = "GID already in use"
+                                                      }),
+                          %% skip 9 because it is 'group name is not unique', which is fine
+                          htoad_utils:on({exit_status, Command, 10},
+                                         #error_report{ fact = {ensure, present, Group},
+                                                        rule = {?MODULE, ensure_group_present},
+                                                        reason = "Can't update group file"
+                                                      })
+                          ]).
+
 %% private
 
 useradd_options(#user{} = User) ->
@@ -133,6 +202,14 @@ useradd_options(#user{} = User) ->
             "--password " ++ Password end,
     case User#user.comment of undefined -> []; Comment -> "--comment '" ++ Comment ++ "'" end
                 ], " "),"\s+"," ",[{return,list},global]).
+
+groupadd_options(#group{} = Group) ->
+    re:replace(string:join([
+    case Group#group.gid of undefined -> []; Gid -> "--gid " ++ integer_to_list(Gid) end,
+    case Group#group.password of undefined -> []; Password -> 
+            lager:warning("Use of --password option for groupadd is not recommended"), 
+            "--password " ++ Password end
+    ], " "),"\s+"," ",[{return,list},global]).
 
 parse_lines(Engine, Lines) ->
     lists:foldl(fun(Line, NewEngine) ->
