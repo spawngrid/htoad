@@ -20,7 +20,7 @@
           name,
           password,
           uid,
-          gid,
+          group,
           quota,
           comment,
           gecos,

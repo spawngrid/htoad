@@ -146,7 +146,7 @@ ensure_group_access_by_name(Engine, {ensure, present,
                                             type = Type,
                                             group = FileGroup
                                           } = File}, 
-                            {current_user, #user{ gid = Gid }}, 
+                            {current_user, #user{ group = Gid }}, 
                             #file{
                                    path = Path,
                                    type = Type
@@ -161,7 +161,7 @@ ensure_group_access_by_gid(Engine, {ensure, present,
                                           type = Type,
                                            group = FileGroup
                                          } = File}, 
-                           {current_user, #user{ gid = Gid }}, 
+                           {current_user, #user{ group = Gid }}, 
                            #file{
                              path = Path,
                              type = Type

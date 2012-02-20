@@ -195,10 +195,10 @@ useradd_options(#user{} = User) ->
     re:replace(string:join([
     case User#user.home of undefined -> []; Home -> "--home " ++ Home end,
     case User#user.shell of undefined -> []; Shell -> "--shell " ++ Shell end,
-    case User#user.gid of 
+    case User#user.group of 
         undefined -> []; 
-        Gid when is_integer(Gid) -> "--gid " ++ integer_to_list(Gid);
-        Gid when is_list(Gid) -> "--gid " ++ Gid 
+        Group when is_integer(Group) -> "--gid " ++ integer_to_list(Group);
+        Group when is_list(Group) -> "--gid " ++ Group 
     end,
     case User#user.uid of undefined -> []; Uid -> "--uid " ++ integer_to_list(Uid) end,
     case User#user.password of undefined -> []; Password -> 
@@ -234,7 +234,7 @@ parse_lines(Engine, Lines) ->
                                                name = Name,
                                                password = Password,
                                                uid = list_to_integer(Uid),
-                                               gid = list_to_integer(Gid),
+                                               group = list_to_integer(Gid),
                                                gecos = Gecos,
                                                home = Home,
                                                shell = Shell
@@ -245,7 +245,7 @@ parse_lines(Engine, Lines) ->
                                                name = Name,
                                                password = Password,
                                                uid = list_to_integer(Uid),
-                                               gid = list_to_integer(Gid),
+                                               group = list_to_integer(Gid),
                                                quota = Quota,
                                                comment = Comment,
                                                gecos = Gecos,
