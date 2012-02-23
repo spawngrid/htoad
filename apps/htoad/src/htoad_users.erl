@@ -6,7 +6,8 @@
 -include_lib("kernel/include/file.hrl").
 
 -rules([init, etc_passwd, etc_group, 
-        ensure_user_present, ensure_user_absent,
+        ensure_user_present_with_group, ensure_user_present_with_gid, ensure_user_present_without_group,
+        ensure_user_absent,
         ensure_group_present, ensure_group_absent]).
 
 init(Engine, #init{}) ->
@@ -66,10 +67,28 @@ ensure_user_absent(Engine,
                                                       })
                            ]).
 
-ensure_user_present(Engine, 
-                    #file{ path = "/usr/sbin/useradd", content = dontread },
-                    {ensure, present, #user{ name = Name } = User}, 
-                    {operating_system_name, linux}) ->
+ensure_user_present_with_group(Engine,
+                               {ensure, present, #user{ group = Group } = User}, 
+                               {operating_system_name, linux},
+                               #file{ path = "/usr/sbin/useradd", content = dontread },
+                               #group{ name = Group }) ->
+    ensure_user_present(Engine, User).
+
+ensure_user_present_with_gid(Engine,
+                               {ensure, present, #user{ group = Group } = User}, 
+                               {operating_system_name, linux},
+                               #file{ path = "/usr/sbin/useradd", content = dontread },
+                               #group{ gid = Group }) ->
+    ensure_user_present(Engine, User).
+
+ensure_user_present_without_group(Engine,
+                               {ensure, present, #user{ group = undefined } = User}, 
+                               {operating_system_name, linux},
+                               #file{ path = "/usr/sbin/useradd", content = dontread }) ->
+    ensure_user_present(Engine, User).
+                               
+
+ensure_user_present(Engine, #user{ name = Name } = User) ->
     lager:debug("Creating user ~s",[Name]),
     Options = useradd_options(User),
     Command = #shell{ cmd = "/usr/sbin/useradd " ++ Options ++ " " ++ Name },
