@@ -7,11 +7,15 @@ Vagrant::Config.run do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "base"
+  config.vm.box = "base64" # drop 64 if using a 32-bit box
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "http://files.vagrantup.com/lucid32.box"
+
+  # Use this if 32-bit host is used
+  # config.vm.box_url = "http://files.vagrantup.com/lucid32.box"
+  # Use this if 64-bit host is used
+  config.vm.box_url = "http://timhuegdon.com/vagrant-boxes/ubuntu-11.10.box"
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui
