@@ -5,10 +5,8 @@
 
 -record(state,{ 
           rules = [],
-          rule_functions = [],
           current_rule = [], %% [] :: atom()
           file_requests = [],
-          exports = [],
           options,
           absname
          }).
@@ -35,10 +33,7 @@ parse_transform(Forms, Options) ->
     {Forms1, State} = parse_trans:transform(fun do_transform/4, 
                                              #state{ options = Options },
                                              Forms, Options),
-    Result0 = parse_trans:revert(Forms1),
-    Result = lists:foldl(fun ({Fun, Arity}, Acc) ->
-                                 parse_trans:export_function(Fun, Arity, Acc)
-                         end, Result0, State#state.rule_functions),
+    Result = parse_trans:revert(Forms1),
     parse_trans:do_insert_forms(above, [{attribute, 0, htoad_file_requests, State#state.file_requests}], Result, parse_trans:initial_context(Result, Options)).
 
 transform(Fun, State, Form, Context) when is_tuple(Form) ->
@@ -53,8 +48,6 @@ transform(Fun, State, Forms, Context) when is_list(Forms) ->
     {parse_trans:revert(Form1),false,State1}.
 
 
-do_transform(attribute,{attribute, _, export, Exports} = Attr, _Context, #state{} = State) ->
-    {Attr, true, State#state{ exports = State#state.exports ++ Exports }};
 do_transform(attribute,{attribute, _, rule, Rule} = Attr, _Context, #state{ rules = Rs } = State) ->
     {Attr, false, State#state{ rules = [rule_name(Rule)|Rs] }};
 
@@ -65,12 +58,12 @@ do_transform(attribute,{attribute, _, rules, Rules0} = Attr, _Context, #state{ r
 do_transform(attribute,{attribute, _, htoad_absname, AbsName} = Attr, _Context, #state{} = State) ->
     {Attr, false, State#state{ absname = AbsName }};
 
-do_transform(function, {function, _, Fun, Arity, _Cs} = Form, _Context, #state{ rules = Rules, rule_functions = RFuns } = State) ->
+do_transform(function, {function, _, Fun, Arity, _Cs} = Form, _Context, #state{ rules = Rules } = State) ->
     case lists:member(Fun, Rules) of
         false ->
             {Form, true, State#state{ current_rule = [] }};
         true ->
-            {Form, true, State#state{ current_rule = Fun, rule_functions = [{Fun, Arity}|RFuns] -- State#state.exports }}
+            {Form, true, State#state{ current_rule = Fun }}
     end;
 
 do_transform(clause, {clause, Line, Head, G, B}, Context,
