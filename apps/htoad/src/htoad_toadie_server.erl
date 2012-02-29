@@ -194,16 +194,16 @@ load_rules(File, Toadie, Bin) ->
     end.
         
 dry_run(File, Toadie) ->
-    {ok, DryEngine} = htoad_engine:start(),
+    {ok, DryEngine} = seresye:start(),
     lager:debug("[~w Dry run for ~s]",[DryEngine, File]),
-    htoad_engine:add_rules(DryEngine, htoad_toadies),
-    htoad_engine:assert(DryEngine, dry_run),
+    seresye:add_rules(DryEngine, htoad_toadies),
+    seresye:assert(DryEngine, dry_run),
     case erlang:function_exported(Toadie, main, 0) of
         true ->
-            htoad_engine:assert(DryEngine, Toadie:main());
+            seresye:assert(DryEngine, Toadie:main());
         false ->
             ok
     end,
     lager:debug("[~w Dry run is over for ~s]",[DryEngine, File]),
-    htoad_engine:stop(DryEngine).
+    seresye:stop(DryEngine).
     

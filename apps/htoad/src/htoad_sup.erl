@@ -18,8 +18,8 @@ start_link(Args) ->
     esupervisor:start_link({local, ?MODULE}, ?MODULE, [Args]).
 
 start_seresye() ->
-    {ok, Pid} = htoad_engine:start(?ENGINE),
-    htoad_engine:set_hooks(?ENGINE,[{before_rule, fun htoad_trace:rule/3}]),
+    {ok, Pid} = seresye:start(?ENGINE),
+    seresye:set_hooks(?ENGINE,[{before_rule, fun htoad_trace:rule/3}]),
     {ok, Pid}.
 
 start_trace() ->
