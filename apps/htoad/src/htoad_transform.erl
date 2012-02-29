@@ -58,7 +58,7 @@ do_transform(attribute,{attribute, _, rules, Rules0} = Attr, _Context, #state{ r
 do_transform(attribute,{attribute, _, htoad_absname, AbsName} = Attr, _Context, #state{} = State) ->
     {Attr, false, State#state{ absname = AbsName }};
 
-do_transform(function, {function, _, Fun, Arity, _Cs} = Form, _Context, #state{ rules = Rules } = State) ->
+do_transform(function, {function, _, Fun, _Arity, _Cs} = Form, _Context, #state{ rules = Rules } = State) ->
     case lists:member(Fun, Rules) of
         false ->
             {Form, true, State#state{ current_rule = [] }};
