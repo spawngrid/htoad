@@ -65,3 +65,10 @@
           fact :: tuple(),
           reason :: term()
         }).
+
+-record(endpoint,
+        {
+          type = ssh :: ssh,
+          hostname :: string(),
+          username :: undefined | string()
+        }).

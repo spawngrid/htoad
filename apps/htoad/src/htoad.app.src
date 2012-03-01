@@ -33,6 +33,7 @@
            htoad_pkg_apt,
            htoad_io,
            htoad_shell,
+           htoad_ssh,
            htoad_error,
            htoad_users
            ]}
