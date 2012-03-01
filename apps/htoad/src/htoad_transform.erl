@@ -21,10 +21,8 @@
 parse_transform(Forms, Options) ->
     #context{ file = File } = parse_trans:initial_context(Forms, Options),
     case erl_lint:module(Forms, File, [nowarn_unused_function,nowarn_unused_vars,nowarn_unused_record]) of
-        {error, Errors, Warnings} ->
-            (length(Warnings) > 0 andalso
-             lager:debug("erl_lint warnings in ~s: ~p", [File, Warnings])),
-            throw({erl_lint, Errors});
+        {error, _Errors, _Warnings} ->
+            Forms;
         {ok, Warnings} when is_list(Warnings), length(Warnings) > 0 ->
             lager:debug("erl_lint warnings in ~s: ~p", [File, Warnings]);
         _ ->
