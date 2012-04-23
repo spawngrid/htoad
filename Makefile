@@ -2,7 +2,7 @@ HERE=$(shell pwd)
 KERL_CONFIG_OPTS=""
 
 ERL=erlang/bin/erl
-REBAR=". $(HERE)/erlang/activate && $(HERE)/rebar"
+REBAR=. $(HERE)/erlang/activate && $(HERE)/rebar
 
 all: release
 
