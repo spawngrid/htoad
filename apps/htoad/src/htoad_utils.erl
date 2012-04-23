@@ -18,7 +18,7 @@ module(Module) ->
     {module, Module}.
 
 file(File) ->
-    filename:absname(filename:join(os:getenv("HTOAD_CWD"), File)).
+    filename:join(["/", "$htoad/master", File]).
 
 render(Template, Vars) ->
     render(Template, [], Vars, []).

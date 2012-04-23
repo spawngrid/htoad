@@ -14,9 +14,14 @@ init(Engine, #init{}) ->
     Engine.
 
 load_file(Engine, {load, File}) ->
-    [ load(F) || F <- filelib:wildcard(htoad_utils:file(File)) ],
+    F = htoad_utils:file(File),
+    case filelib:wildcard(F) of
+      [] ->
+          lager:error("File(s) ~p not found",[F]);
+      Files ->
+          [ load(Fi) || Fi <- Files ]
+    end,
     Engine.
-
 
 apply_command(Engine, #'htoad.toadie'{ server = Pid }, {htoad_command, apply}, #init{}) ->
     gen_server:cast(Pid, apply),

@@ -12,26 +12,40 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    {ok, {Args, Files}} = getopt:parse(optspec(), init:get_plain_arguments()),
-    case Files of
+    {ok, {Args, Cmds}} = getopt:parse(optspec(), init:get_plain_arguments()),
+    case Cmds of
         [] ->
-            getopt:usage(optspec(), "htoad","[file ...]",
-                         [{"file", "Toadies to process"}]),
+            getopt:usage(optspec(), "htoad","<command>",
+                         [{"command", "Command to run"}]),
             init:stop(),
             {ok, self()};
-        _ ->
+        ["start"] ->
             process_args(Args),
             Result = htoad_sup:start_link(Args),
-            [ htoad:assert({load, File}) || File <- Files ],
             init_engine(Args),
-            htoad:assert({htoad_command, apply}),
             case proplists:get_value(shell, Args) of
                 true ->
                     shell:start();
                 _ ->
                     skip
             end,
-            Result
+            Result;
+        ["apply", Filename] ->
+            Result = htoad_sup:start_link(Args),
+            htoad_file_server:redirect("/$htoad/master", filename:absname(os:getenv("HTOAD_CWD")), original_file_server),
+            Hosts = htoad_hosts(),
+            io:format("Applying ~s to ~p~n", [Filename, Hosts]),
+            rpc:multicall(Hosts, htoad_file_server, redirect, ["/$htoad/master", "/$htoad/master", {file_server_2, node()}]),
+            rpc:multicall(Hosts, htoad, retract, [{load, Filename}]),
+            rpc:multicall(Hosts, htoad, assert, [{load, Filename}]),
+            rpc:multicall(Hosts, htoad, retract, [{htoad_command, apply}]),
+            rpc:multicall(Hosts, htoad, assert, [{htoad_command, apply}]),
+            init:stop(),
+            Result;
+        _ ->
+            io:format("Unknown command, terminating~n"),
+            init:stop(),
+            {ok, self()}
     end.
 
 
@@ -39,6 +53,15 @@ stop(_State) ->
     ok.
 
 %% private
+
+to_node(Host) when is_atom(Host) ->
+    to_node(atom_to_list(Host));
+to_node(Host) when is_list(Host) ->
+    list_to_atom("htoad@" ++ Host).
+
+htoad_hosts() ->
+    {ok, Hosts} = file:consult(htoad_utils:file(".htoad.hosts")),
+    lists:map(fun to_node/1, Hosts).
 
 init_engine(Args) ->
     {ok, Modules} = application:get_env(htoad, modules),
@@ -69,5 +92,5 @@ optspec() ->
     [
      {host, undefined, "host", string, "Override host name"},
      {log, $l, "log", {string, "error"}, "Log output level (debug, info, error)"},
-     {shell, undefined, "shell", {boolean, false}, "Enabled Erlang shell"}
+     {shell, undefined, "shell", {boolean, false}, "Enables Erlang shell"}
     ].

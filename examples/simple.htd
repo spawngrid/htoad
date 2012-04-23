@@ -1,22 +1,5 @@
--define(BASE_DIR, "/tmp/srv").
-
-build_server() ->
-    File = #file{ type = dir,
-                  path = filename:join([?BASE_DIR, "build_dir"])
-                },
-    
-    [
-     ensure(present, File),
-     on([ {operating_system_name, darwin},
-          {package_manager, brew} ],
-        ensure(present, #package{ name = "git" }))
-
-    ].
-
-
 main() ->
     [
      load("base.htd"),
-     on({host, "spawn.local"}, {role, build_server}),
-     on({role, build_server}, build_server())
+     on({host, "htoad.test"}, {role, test_server})
     ].

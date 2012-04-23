@@ -42,6 +42,10 @@ init([_Args]) ->
     #one_for_one{
       children = [
                   #worker{
+                     id = htoad_file_server,
+                     restart = permanent
+                  },
+                  #worker{
                      id = htoad_trace,
                      restart = permanent,
                      start_func = {?MODULE, start_trace, []},
