@@ -12,6 +12,7 @@
                   getopt,
                   sasl,
                   dynamic_compile,
+                  compiler,
                   erlydtl,
                   parse_trans,
                   syntax_tools
