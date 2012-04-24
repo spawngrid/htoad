@@ -1,3 +1,5 @@
+*.beam
+*.app
 .kerl
 erlang
 log
