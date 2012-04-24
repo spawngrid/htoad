@@ -102,7 +102,7 @@ start_link(Name) when is_atom(Name) ->
 start_link(ClientState) when not is_atom(ClientState) ->
     gen_server:start_link(?MODULE, [ClientState], []).
 
-start_link(ClientState, Name) when is_atom(Name) ->
+start_link(Name, ClientState) when is_atom(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [ClientState], []).
 
 

@@ -18,7 +18,16 @@ start_link(Args) ->
     esupervisor:start_link({local, ?MODULE}, ?MODULE, [Args]).
 
 start_seresye() ->
-    {ok, Pid} = seresye:start(?ENGINE),
+    {ok, EngineDump} = application:get_env(htoad, engine_dump), 
+    EngineFilename = EngineDump ++ "." ++ atom_to_list(node()),
+    case filelib:is_regular(EngineFilename) of
+      true ->
+         lager:debug("Restoring engine from ~s", [EngineFilename]),
+         {ok, B} = file:read_file(EngineFilename),
+         {ok, Pid} = seresye:start(?ENGINE, binary_to_term(B));
+      false ->
+          {ok, Pid} = seresye:start(?ENGINE)
+    end,
     seresye:set_hooks(?ENGINE,[{before_rule, fun htoad_trace:rule/3}]),
     {ok, Pid}.
 

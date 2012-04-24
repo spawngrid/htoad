@@ -19,7 +19,8 @@
                  ]},
   {mod, { htoad_app, []}},
   {env, [
-         {trace, [{htoad_trace_ets, []}]},
+         {engine_dump, "data/engine"},
+         {trace, [{htoad_trace_ets, []}, {htoad_engine_dump, []}]},
          {modules,
           [
            htoad_base,
