@@ -11,8 +11,12 @@ init(Engine, #init{}, {operating_system_name, linux}, {linux_distribution, "Debi
     initialize(Engine).
 
 initialize(Engine) ->
-    lager:debug("APT has been selected as a package manager"),
-    htoad:assert(Engine, {package_manager, apt}).
+    lager:debug("APT has been selected as a package manager"),        
+    lager:info("Updating apt repositories"),
+    Command = #shell{ cmd = "apt-get -y update", run_as = superuser },
+    htoad:assert(Engine, 
+           [Command,
+            htoad_utils:on({exit_status, Command, 0}, {package_manager, apt})]).
 
 -define(APT_SHELL_CHECK(Package),
         case Package of
