@@ -1,0 +1,23 @@
+#! /usr/bin/env escript
+
+main(_) ->
+    GitDeps = filelib:wildcard("*/.git", "deps"),
+    Deps = [ hd(string:tokens(Dep,"/")) || Dep <- GitDeps ],
+    io:format("Conversion plan: ~p~n",[Deps]),
+    [ subtreeize(Dep) || Dep <- Deps ].
+
+subtreeize(Dep) ->
+    io:format("=== Processing: ~s~n", [Dep]),
+    Path = filename:join(["deps", Dep]),
+    Url = string:strip(os:cmd("cd " ++ Path ++ " && git config remote.origin.url"), right, $\n),
+    Tag = string:strip(os:cmd("cd " ++ Path ++ " && git log -n 1 --pretty=format:%h ."), right, $\n),
+    io:format("git origin: ~s~n",[Url]),
+    io:format("git version: ~s~n",[Tag]),
+    MoveOutCmd = "rm -rf " ++ Path,
+    FetchCmd = "git remote add " ++ Dep ++ " " ++ Url ++ " ; git fetch -n " ++ Dep,
+    SubtreeCmd = "git subtree add -P " ++ Path ++ " " ++ Tag,
+    Cmds = [MoveOutCmd, FetchCmd, SubtreeCmd],
+    io:format("Commands: ~p~n",[Cmds]),
+    [ os:cmd(Cmd) || Cmd <- Cmds ],
+    io:format("~nDONE~n").
+    

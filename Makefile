@@ -10,11 +10,8 @@ release: $(ERL) compile
 		@rm -rf rel/htoad
 		@$(REBAR) generate
 
-compile: $(ERL) deps
+compile: $(ERL)
 		@$(REBAR) compile
-
-deps: $(ERL)
-		@$(REBAR) get-deps
 
 $(ERL):
 		@KERL_CONFIGURE_OPTIONS=$(KERL_CONFIG_OPTS) KERL_INSTALL_AGNERIZED_REBAR=n HOME=$(HERE) ./kerl build R15B01 r15b01
